@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy"
     content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com;">
-  <title>GeldeSat VPN</title>
+  <title>MTE VPN</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -15,6 +15,9 @@
 </head>
 
 <body>
+  <!-- Screen Flash Overlay -->
+  <div class="screen-flash" id="screen-flash"></div>
+
   <!-- Title Bar -->
   <div class="titlebar" id="titlebar">
     <div class="titlebar-title">
@@ -43,6 +46,12 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" />
         </svg>
       </button>
+      <button class="titlebar-btn id-profile" id="btn-profile" title="Profil & Kullanım">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      </button>
       <button class="titlebar-btn id-close" id="btn-close" title="Kapat">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
@@ -53,12 +62,22 @@
 
   <!-- Main Content -->
   <div class="app-container">
+    <!-- Particles Container -->
+    <div class="particles-container" id="particles-container"></div>
+
     <!-- Connection Visual -->
     <div class="connection-visual">
       <div class="globe-container" id="globe-container">
         <div class="globe-ring ring-1"></div>
         <div class="globe-ring ring-2"></div>
         <div class="globe-ring ring-3"></div>
+
+        <!-- Holographic HUD Elements -->
+        <div class="hud-ring hud-ring-1"></div>
+        <div class="hud-ring hud-ring-2"></div>
+        <div class="hud-scan-line"></div>
+        <div class="hud-circle-points"></div>
+
         <div class="globe-core" id="globe-core">
           <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="1.5" opacity="0.3" />
@@ -126,22 +145,42 @@
 
     <!-- Connect Button -->
     <div class="connect-section">
-      <button class="connect-btn" id="connect-btn">
-        <div class="connect-btn-bg"></div>
-        <div class="connect-btn-content">
-          <svg class="power-icon" viewBox="0 0 32 32" fill="none" id="power-icon">
-            <path d="M16 4V16" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
-            <path d="M8.93 8.93A10 10 0 1 0 23.07 8.93" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
-          </svg>
-        </div>
-        <div class="connect-btn-ring"></div>
-      </button>
+      <div class="connect-btn-wrapper" id="connect-btn-wrapper">
+        <div class="ripple-container" id="ripple-container"></div>
+        <div class="shockwave" id="shockwave"></div>
+        <div class="success-burst" id="success-burst"></div>
+        <div class="disconnect-burst" id="disconnect-burst"></div>
+        <button class="connect-btn" id="connect-btn">
+          <div class="connect-btn-content">
+            <svg class="power-icon" viewBox="0 0 32 32" fill="none" id="power-icon">
+              <path d="M16 4V16" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+              <path d="M8.93 8.93A10 10 0 1 0 23.07 8.93" stroke="currentColor" stroke-width="3"
+                stroke-linecap="round" />
+            </svg>
+          </div>
+        </button>
+        <div class="connect-outer-ring"></div>
+        <div class="connect-outer-ring-2"></div>
+        <div class="connect-spinner-ring" id="spinner-ring"></div>
+        <div class="radar-sweep" id="radar-sweep"></div>
+      </div>
       <span class="connect-label" id="connect-label">Bağlanmak için dokunun</span>
     </div>
+
+    <!-- Aurora / Nebula Background Layers -->
+    <div class="aurora-layer aurora-1"></div>
+    <div class="aurora-layer aurora-2"></div>
+    <div class="aurora-layer aurora-3"></div>
+    <div class="nebula-layer nebula-1"></div>
+    <div class="nebula-layer nebula-2"></div>
+    <div class="noise-overlay"></div>
 
     <!-- Decorative Background Elements -->
     <div class="decor-glow-1"></div>
     <div class="decor-glow-2"></div>
+    <div class="decor-glow-3"></div>
+    <div class="decor-glow-4"></div>
+    <div class="decor-glow-5"></div>
 
     <!-- Error Message -->
     <div class="error-container" id="error-container" style="display: none;">
@@ -154,6 +193,68 @@
         <span id="error-text">Hata oluştu</span>
       </div>
     </div>
+
+    <!-- Usage Stats Modal -->
+    <div class="profile-modal-overlay" id="profile-modal">
+      <div class="profile-modal-content">
+        <div class="profile-header">
+          <div>
+            <h2>Hesabım</h2>
+            <span class="user-role">Premium Üye</span>
+          </div>
+          <button class="icon-btn close-btn" id="btn-close-profile">
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="user-profile-summary">
+          <div class="avatar-circle">M</div>
+          <div class="user-details-box">
+            <span class="username">MTE Kullanıcısı</span>
+            <span class="user-id">ID: 8842-9912</span>
+            <div class="user-status-badge">Aktif</div>
+          </div>
+        </div>
+
+        <div class="usage-stats-section">
+          <h3>Kullanım İstatistikleri</h3>
+          <div class="usage-grid-layout">
+            <div class="usage-card-item">
+              <span class="time-label">Bugün</span>
+              <span class="data-value" id="usage-day">--</span>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 15%"></div>
+              </div>
+            </div>
+            <div class="usage-card-item">
+              <span class="time-label">Bu Hafta</span>
+              <span class="data-value" id="usage-week">--</span>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 45%"></div>
+              </div>
+            </div>
+            <div class="usage-card-item">
+              <span class="time-label">Bu Ay</span>
+              <span class="data-value" id="usage-month">--</span>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 70%"></div>
+              </div>
+            </div>
+            <div class="usage-card-item highlight-card">
+              <span class="time-label">Tüm Zamanlar</span>
+              <span class="data-value" id="usage-all">--</span>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 100%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script src="app.js"></script>
