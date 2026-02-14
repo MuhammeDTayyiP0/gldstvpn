@@ -1,6 +1,6 @@
 {
   "name": "v204",
-  "version": "2.4.2",
+  "version": "2.4.3",
   "description": "V204 - Güvenli VLESS VPN İstemcisi",
   "main": "src/main/main.js",
   "scripts": {
@@ -20,7 +20,7 @@
   },
   "build": {
     "appId": "com.v204.vpn",
-    "productName": "V204",
+    "productName": "V204 VPN",
     "directories": {
       "output": "dist"
     },

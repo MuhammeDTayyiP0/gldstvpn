@@ -58,7 +58,7 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
     },
-    title: 'V204',
+    title: 'V204 VPN',
     icon: iconPath
   });
 
