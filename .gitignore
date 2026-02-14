@@ -4,6 +4,7 @@ dist/
 .DS_Store
 .env
 build/
+!build/icon.png
 out/
 installer.iss
 installer.nsi

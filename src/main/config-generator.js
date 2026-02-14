@@ -90,6 +90,7 @@ class ConfigGenerator {
                                 users: [
                                     {
                                         id: config.uuid,
+                                        email: 'user@v204.vpn', // Required for stats
                                         encryption: 'none',
                                         level: 0,
                                     },
