@@ -57,13 +57,21 @@ function createWindow() {
 }
 
 function createTray() {
-  const iconPath = path.join(__dirname, '..', '..', 'resources', 'icon.png');
+  const resourcesPath = path.join(__dirname, '..', '..', 'resources');
+  const pngPath = path.join(resourcesPath, 'icon.png');
+  const svgPath = path.join(resourcesPath, 'icon.svg');
+
   let trayIcon;
-  try {
-    trayIcon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
-  } catch {
+  if (fs.existsSync(pngPath)) {
+    trayIcon = nativeImage.createFromPath(pngPath);
+  } else if (fs.existsSync(svgPath)) {
+    trayIcon = nativeImage.createFromPath(svgPath);
+  } else {
     trayIcon = nativeImage.createEmpty();
   }
+
+  // Ensure icon is sized for tray
+  trayIcon = trayIcon.resize({ width: 16, height: 16 });
 
   tray = new Tray(trayIcon);
 
