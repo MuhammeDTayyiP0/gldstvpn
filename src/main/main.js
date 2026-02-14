@@ -39,6 +39,9 @@ function createWindow() {
 
   console.log('Window Icon Path:', iconPath);
 
+  // Performance Optimization for Linux: Disable transparency
+  const isLinux = process.platform === 'linux';
+
   mainWindow = new BrowserWindow({
     width: 480,
     height: 720,
@@ -47,18 +50,26 @@ function createWindow() {
     resizable: false,
     maximizable: false,
     frame: false,
-    transparent: true,
-    backgroundColor: '#00000000',
+    // Disable transparency on Linux for better performance
+    transparent: !isLinux,
+    backgroundColor: isLinux ? '#111827' : '#00000000', // Dark background if opaque
     webPreferences: {
       preload: path.join(__dirname, '..', 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
     },
-    title: 'V204 VPN',
+    title: 'V204',
     icon: iconPath
   });
 
   mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
+
+  // Linux Optimization: Inject CSS class for specific styling
+  mainWindow.webContents.on('did-finish-load', () => {
+    if (isLinux) {
+      mainWindow.webContents.executeJavaScript(`document.body.classList.add('platform-linux');`);
+    }
+  });
 
   // Explicitly set icon again to ensure it sticks
   if (fs.existsSync(iconPath)) {
@@ -103,7 +114,7 @@ function createTray() {
   try {
     tray = new Tray(finalIcon);
     const contextMenu = Menu.buildFromTemplate([
-      { label: 'V204 VPN v2.0.4', enabled: false },
+      { label: 'V204 v2.4.2', enabled: false },
       { type: 'separator' },
       { label: 'Uygulamayı Göster', click: () => { if (mainWindow) { mainWindow.show(); mainWindow.focus(); } } },
       { type: 'separator' },
@@ -119,7 +130,7 @@ function createTray() {
       },
     ]);
 
-    tray.setToolTip('V204 VPN');
+    tray.setToolTip('V204');
     tray.setContextMenu(contextMenu);
 
     tray.on('double-click', () => {
