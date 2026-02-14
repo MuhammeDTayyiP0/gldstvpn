@@ -66,35 +66,18 @@ function createWindow() {
 
 function createTray() {
   // Try to load icon - prefer SVG (actual design), fallback to PNG
-  const isPackaged = app.isPackaged;
-  const baseDir = isPackaged ? process.resourcesPath : path.join(__dirname, '..', '..');
-  const svgPath = path.join(baseDir, 'resources', 'icon.svg');
-  const pngPath = path.join(baseDir, 'resources', 'icon.png');
-
+  // Simplify icon loading: ALWAYS look inside the app bundle (asar or folder)
+  // Structure is consistently: root/resources/icon.png relative to main.js at src/main/main.js
+  const iconPath = path.join(__dirname, '..', '..', 'resources', 'icon.png');
   let trayIcon;
 
-  // Try SVG first (contains the actual shield+checkmark design)
-  if (fs.existsSync(svgPath)) {
-    try {
-      const svgData = fs.readFileSync(svgPath);
-      trayIcon = nativeImage.createFromBuffer(svgData);
-      if (trayIcon && !trayIcon.isEmpty()) {
-        trayIcon.setTemplateImage(false);
-      }
-    } catch (e) {
-      console.log('SVG icon load failed, trying PNG:', e.message);
-    }
+  if (fs.existsSync(iconPath)) {
+    trayIcon = nativeImage.createFromPath(iconPath);
   }
 
-  // Fallback to PNG
-  if (!trayIcon || trayIcon.isEmpty()) {
-    if (fs.existsSync(pngPath)) {
-      trayIcon = nativeImage.createFromPath(pngPath);
-      if (trayIcon && !trayIcon.isEmpty()) {
-        trayIcon.setTemplateImage(false);
-      }
-    }
-  }
+
+
+
 
   // Final fallback to a solid indigo square matching our brand color
   if (!trayIcon || trayIcon.isEmpty()) {
@@ -108,7 +91,7 @@ function createTray() {
   try {
     tray = new Tray(finalIcon);
     const contextMenu = Menu.buildFromTemplate([
-      { label: 'MTE VPN v1.2.0', enabled: false },
+      { label: 'MTE VPN v1.2.1', enabled: false },
       { type: 'separator' },
       { label: 'Uygulamayı Göster', click: () => { if (mainWindow) { mainWindow.show(); mainWindow.focus(); } } },
       { type: 'separator' },
