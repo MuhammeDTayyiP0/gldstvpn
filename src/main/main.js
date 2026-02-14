@@ -114,7 +114,7 @@ function createTray() {
   try {
     tray = new Tray(finalIcon);
     const contextMenu = Menu.buildFromTemplate([
-      { label: 'V204 v2.4.4', enabled: false },
+      { label: 'V204 v2.4.5', enabled: false },
       { type: 'separator' },
       { label: 'Uygulamayı Göster', click: () => { if (mainWindow) { mainWindow.show(); mainWindow.focus(); } } },
       { type: 'separator' },

@@ -45,20 +45,20 @@ jobs:
           Expand-Archive -Path "xray.zip" -DestinationPath "resources/xray" -Force
           Remove-Item "xray.zip"
 
-      - name: Build/release Electron app
-        uses: samuelmeuli/action-electron-builder@v1
-        with:
-          # GitHub token, automatically provided to the action
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build Electron App
+        run: |
+          npx electron-builder --config package.json --publish never
 
-          # If the commit is tagged with a version (e.g. "v1.0.0"),
-          # release the app after building
-          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
-
-      - name: Rename Release
+      - name: Release & Upload Artifacts
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           tag_name: ${{ github.ref_name }}
           name: "${{ github.ref_name }} - V204 VPN"
+          draft: false
+          prerelease: false
+          files: |
+            dist/*.exe
+            dist/*.deb
+            dist/*.AppImage
           token: ${{ secrets.GITHUB_TOKEN }}
