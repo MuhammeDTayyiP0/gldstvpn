@@ -1,0 +1,23 @@
+{
+    "protocol": "vless",
+    "tag": "GeldeSat VPN",
+    "settings": {
+        "address": "vpn.geldesat.com",
+        "port": 443,
+        "uuid": "bf5d83c2-69c5-47d0-aa13-234cd4f521b0",
+        "encryption": "none",
+        "network": "ws",
+        "security": "tls",
+        "wsSettings": {
+            "path": "/chat",
+            "headers": {
+                "Host": "vpn.geldesat.com"
+            }
+        },
+        "tlsSettings": {
+            "serverName": "vpn.geldesat.com",
+            "allowInsecure": false
+        }
+    },
+    "shareUri": "vless://bf5d83c2-69c5-47d0-aa13-234cd4f521b0@vpn.geldesat.com:443?type=ws&security=tls&path=%2Fchat&host=vpn.geldesat.com&sni=vpn.geldesat.com#GeldeSat%20VPN"
+}

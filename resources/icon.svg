@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.3)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  <!-- Shield Background -->
+  <path d="M256 32L56 132v120c0 110 86.4 213.4 200 240 113.6-26.6 200-130 200-240V132L256 32z" 
+        fill="url(#bg)" filter="url(#glow)"/>
+  <!-- Shield Highlight -->
+  <path d="M256 48L72 140v112c0 100 78 194 184 220V48z" 
+        fill="url(#shine)" opacity="0.15"/>
+  <!-- Shield Border -->
+  <path d="M256 32L56 132v120c0 110 86.4 213.4 200 240 113.6-26.6 200-130 200-240V132L256 32z" 
+        fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="4"/>
+  <!-- Checkmark -->
+  <path d="M180 260l52 52 100-100" 
+        fill="none" stroke="white" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"
+        filter="url(#glow)"/>
+</svg>

@@ -1,0 +1,57 @@
+{
+  "name": "geldesat-vpn",
+  "version": "1.0.0",
+  "description": "GeldeSat VPN - Güvenli VLESS VPN İstemcisi",
+  "main": "src/main/main.js",
+  "scripts": {
+    "dev": "electron .",
+    "build:win": "electron-packager . \"GeldeSat VPN\" --platform=win32 --arch=x64 --out=dist --overwrite --extra-resource=resources/xray",
+    "build:linux": "electron-packager . \"GeldeSat VPN\" --platform=linux --arch=x64 --out=dist --overwrite --extra-resource=resources/xray"
+  },
+  "author": "GeldeSat",
+  "license": "MIT",
+  "devDependencies": {
+    "@electron/packager": "^19.0.5",
+    "electron": "^28.1.0",
+    "electron-builder": "^24.9.1",
+    "electron-winstaller": "^5.4.0",
+    "innosetup-compiler": "^6.3.1",
+    "makensis": "^3.0.3"
+  },
+  "build": {
+    "appId": "com.geldesat.vpn",
+    "productName": "GeldeSat VPN",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "resources/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/xray",
+        "to": "xray",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        "dir"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Network"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
