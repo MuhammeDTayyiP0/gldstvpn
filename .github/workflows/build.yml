@@ -37,7 +37,7 @@ jobs:
       - name: Download Xray Core (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          mkdir resources/xray
+          if (!(Test-Path resources/xray)) { mkdir resources/xray }
           Invoke-WebRequest -Uri "https://github.com/XTLS/Xray-core/releases/latest/download/Xray-windows-64.zip" -OutFile "xray.zip"
           Expand-Archive -Path "xray.zip" -DestinationPath "resources/xray" -Force
           Remove-Item "xray.zip"
