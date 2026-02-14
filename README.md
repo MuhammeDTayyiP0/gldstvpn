@@ -1,4 +1,4 @@
-# MTE VPN
+# V204 VPN
 
 Güvenli ve hızlı VLESS VPN istemcisi. Windows ve Linux masaüstü uygulaması + Android/iOS yapılandırma rehberleri.
 

@@ -1,11 +1,31 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Solid Background Shield (No gradients/filters for tray compatibility) -->
-  <path d="M256 32L56 132v120c0 110 86.4 213.4 200 240 113.6-26.6 200-130 200-240V132L256 32z" 
-        fill="#4f46e5"/>
-  <!-- Highlight Area -->
-  <path d="M256 48L72 140v112c0 100 78 194 184 220V48z" 
-        fill="#ffffff" opacity="0.2"/>
-  <!-- Checkmark -->
-  <path d="M180 260l52 52 100-100" 
-        fill="none" stroke="#ffffff" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cyberGrad" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#06b6d4" /> <!-- Cyan -->
+      <stop offset="100%" stop-color="#7c3aed" /> <!-- Violet -->
+    </linearGradient>
+    <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="15" result="coloredBlur" />
+      <feMerge>
+        <feMergeNode in="coloredBlur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background Shape: Hexagon (Stroke Only for transparency) -->
+  <path d="M256 32L464 140V372L256 480L48 372V140L256 32Z" 
+        stroke="url(#cyberGrad)" stroke-width="24" fill="none" filter="url(#neonGlow)" stroke-linejoin="round"/>
+
+  <!-- Inner Circuitry / Node -->
+  <circle cx="256" cy="256" r="64" fill="url(#cyberGrad)" opacity="0.8" />
+  
+  <path d="M256 192V140" stroke="#06b6d4" stroke-width="12" stroke-linecap="round"/>
+  <path d="M256 320V372" stroke="#7c3aed" stroke-width="12" stroke-linecap="round"/>
+  <path d="M312 224L364 192" stroke="#7c3aed" stroke-width="12" stroke-linecap="round"/>
+  <path d="M200 288L148 320" stroke="#06b6d4" stroke-width="12" stroke-linecap="round"/>
+  
+  <!-- "MTE" stylized or simple abstract lines -->
+  <path d="M256 32 L464 140 L464 372 L256 480 L48 372 L48 140 Z" stroke="white" stroke-width="2" opacity="0.3" fill="none"/>
+
 </svg>

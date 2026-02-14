@@ -33,11 +33,19 @@ if (!gotTheLock) {
 }
 
 function createWindow() {
+
+  // Use PNG for Windows compatibility
+  const iconPath = path.join(__dirname, '..', '..', 'resources', 'icon.png');
+
+  console.log('Window Icon Path:', iconPath);
+
   mainWindow = new BrowserWindow({
     width: 480,
     height: 720,
     minWidth: 420,
     minHeight: 620,
+    resizable: false,
+    maximizable: false,
     frame: false,
     transparent: true,
     backgroundColor: '#00000000',
@@ -46,11 +54,16 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
     },
-    title: 'MTE VPN',
-    icon: path.join(__dirname, '..', '..', 'resources', 'icon.png')
+    title: 'V204 VPN',
+    icon: iconPath
   });
 
   mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
+
+  // Explicitly set icon again to ensure it sticks
+  if (fs.existsSync(iconPath)) {
+    mainWindow.setIcon(iconPath);
+  }
 
   mainWindow.on('close', (event) => {
     if (!app.isQuitting) {
@@ -65,7 +78,6 @@ function createWindow() {
 }
 
 function createTray() {
-  // Try to load icon - prefer SVG (actual design), fallback to PNG
   // Simplify icon loading: ALWAYS look inside the app bundle (asar or folder)
   // Structure is consistently: root/resources/icon.png relative to main.js at src/main/main.js
   const iconPath = path.join(__dirname, '..', '..', 'resources', 'icon.png');
@@ -78,20 +90,20 @@ function createTray() {
 
 
 
-
   // Final fallback to a solid indigo square matching our brand color
   if (!trayIcon || trayIcon.isEmpty()) {
     const solidBlueBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAADhJREFUOE9jZKAQMFKon2HUAIYGBgaG/0D8H4j/A/E/IP6PST6E8X8Yv8HoP4zfYfQfRn8mEAfG/6H4PxSfuAb8Z2D4D8YnrgH/Gf6PST6E8X8Yv8HoP4zfYfQfRn8mEAcA3c0vIdat6r8AAAAASUVORK5CYII=';
     trayIcon = nativeImage.createFromDataURL(solidBlueBase64);
   }
 
-  // Ensure 16x16 for Windows Tray
-  const finalIcon = trayIcon.resize({ width: 16, height: 16 });
+  // Ensure 16x16 for Windows Tray - REMOVED to allow auto-scaling
+  // const finalIcon = trayIcon.resize({ width: 16, height: 16 });
+  const finalIcon = trayIcon;
 
   try {
     tray = new Tray(finalIcon);
     const contextMenu = Menu.buildFromTemplate([
-      { label: 'MTE VPN v1.2.1', enabled: false },
+      { label: 'V204 VPN v2.0.4', enabled: false },
       { type: 'separator' },
       { label: 'Uygulamayı Göster', click: () => { if (mainWindow) { mainWindow.show(); mainWindow.focus(); } } },
       { type: 'separator' },
@@ -107,7 +119,7 @@ function createTray() {
       },
     ]);
 
-    tray.setToolTip('MTE VPN');
+    tray.setToolTip('V204 VPN');
     tray.setContextMenu(contextMenu);
 
     tray.on('double-click', () => {
@@ -237,35 +249,35 @@ function getUsageStats() {
 app.whenReady().then(() => {
   // Set App User Model ID for Windows Taskbar grouping and notifications
   if (process.platform === 'win32') {
-    app.setAppUserModelId('com.mte.vpn');
+    app.setAppUserModelId('com.mte.vpn.updated');
   }
 
   xrayManager = new XrayManager();
   proxySettings = new ProxySettings();
   initUsageStore(); // Initialize store
 
-  createWindow();
-  createTray();
-
+  // Register IPC Handlers
   ipcMain.handle('vpn:connect', () => {
     // Reset session stats on new connection attempt to sync with XrayManager which resets on start
     lastSessionStats = { up: 0, down: 0 };
     return handleConnect();
   });
+
   ipcMain.handle('vpn:disconnect', () => handleDisconnect());
-  ipcMain.handle('vpn:get-usage', () => getUsageStats()); // Expose usage stats
+
+  ipcMain.handle('vpn:get-usage', () => getUsageStats());
+
   ipcMain.handle('vpn:status', () => ({
     connected: xrayManager.isRunning(),
     serverInfo: xrayManager.getServerInfo(),
   }));
+
   ipcMain.handle('window:minimize', () => { if (mainWindow) mainWindow.minimize(); });
   ipcMain.handle('window:close', () => { if (mainWindow) mainWindow.hide(); });
 
-  xrayManager.on('log', (data) => { if (mainWindow) mainWindow.webContents.send('xray-log', data); });
-  xrayManager.on('traffic', (data) => {
-    if (mainWindow) mainWindow.webContents.send('traffic-update', data);
-    processTrafficForStats(data); // Process persistence
-  });
+  // Create UI
+  createWindow();
+  createTray();
 });
 
 app.on('window-all-closed', () => {

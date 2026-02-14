@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy"
     content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com;">
-  <title>MTE VPN</title>
+  <title>V204 VPN</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -21,24 +21,8 @@
   <!-- Title Bar -->
   <div class="titlebar" id="titlebar">
     <div class="titlebar-title">
-      <svg class="titlebar-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2L2 7V12C2 17.5 6.84 22.74 12 24C17.16 22.74 22 17.5 22 12V7L12 2Z" fill="url(#shieldGrad)"
-          opacity="0.9" />
-        <path d="M12 2L2 7V12C2 17.5 6.84 22.74 12 24C17.16 22.74 22 17.5 22 12V7L12 2Z" stroke="url(#shieldStroke)"
-          stroke-width="0.5" fill="none" />
-        <path d="M9 12L11 14L15 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        <defs>
-          <linearGradient id="shieldGrad" x1="2" y1="2" x2="22" y2="24">
-            <stop offset="0%" stop-color="#6366f1" />
-            <stop offset="100%" stop-color="#8b5cf6" />
-          </linearGradient>
-          <linearGradient id="shieldStroke" x1="2" y1="2" x2="22" y2="24">
-            <stop offset="0%" stop-color="#818cf8" />
-            <stop offset="100%" stop-color="#a78bfa" />
-          </linearGradient>
-        </defs>
-      </svg>
-      <span>MTE VPN</span>
+      <img src="../../resources/icon.png" class="titlebar-icon-img" alt="Logo">
+      <span>V204 VPN</span>
     </div>
     <div class="titlebar-controls">
       <button class="titlebar-btn id-minimize" id="btn-minimize" title="Küçült">
@@ -255,6 +239,7 @@
       </div>
     </div>
 
+    <div class="footer-credit">made by MTE.</div>
   </div>
 
   <script src="app.js"></script>

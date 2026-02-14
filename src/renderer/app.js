@@ -1,4 +1,4 @@
-// MTE VPN - Renderer Application Logic v3.0 Ultra Premium
+// V204 VPN - Renderer Application Logic v3.0 Ultra Premium
 
 class VPNApp {
     constructor() {
@@ -108,7 +108,26 @@ class VPNApp {
         }
     }
 
+    async handleIconGeneration(svgContent) {
+        console.log('Generating transparent icon...');
+        const img = new Image();
+        const svgBlob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
 
+        img.onload = async () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, 512, 512);
+
+            const pngDataUrl = canvas.toDataURL('image/png');
+            await window.vpnAPI.saveIconData(pngDataUrl);
+            console.log('Icon generated and sent to main process.');
+            URL.revokeObjectURL(url);
+        };
+        img.src = url;
+    }
 
     animateStatusText(text) {
         this.statusText.classList.remove('animate-change');
@@ -151,7 +170,8 @@ class VPNApp {
                     this.setDisconnectedState();
                     break;
                 case 'connecting':
-                    this.setConnectingState();
+                    // Initialize UI
+                    this.updateConnectionStatus('disconnected'); // Initial state
                     break;
             }
         });
@@ -159,6 +179,8 @@ class VPNApp {
         window.vpnAPI.onTrafficUpdate((data) => {
             this.updateTrafficUI(data);
         });
+
+
 
         window.vpnAPI.onConnectionError((error) => {
             this.showError(error);

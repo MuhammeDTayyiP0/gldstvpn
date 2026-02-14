@@ -1,12 +1,12 @@
 {
   "name": "mte-vpn",
-  "version": "1.2.1",
-  "description": "MTE VPN - Güvenli VLESS VPN İstemcisi",
+  "version": "2.0.4",
+  "description": "V204 VPN - Güvenli VLESS VPN İstemcisi",
   "main": "src/main/main.js",
   "scripts": {
     "dev": "electron .",
-    "build:win": "electron-packager . \"MTE VPN\" --platform=win32 --arch=x64 --out=dist --overwrite --extra-resource=resources/xray",
-    "build:linux": "electron-packager . \"MTE VPN\" --platform=linux --arch=x64 --out=dist --overwrite --extra-resource=resources/xray"
+    "build:win": "electron-packager . \"V204 VPN\" --platform=win32 --arch=x64 --out=dist --overwrite --extra-resource=resources/xray --icon=resources/icon.png",
+    "build:linux": "electron-packager . \"V204 VPN\" --platform=linux --arch=x64 --out=dist --overwrite --extra-resource=resources/xray"
   },
   "author": "GeldeSat <info@geldesat.com>",
   "license": "MIT",
@@ -20,7 +20,7 @@
   },
   "build": {
     "appId": "com.mte.vpn",
-    "productName": "MTE VPN",
+    "productName": "V204 VPN",
     "directories": {
       "output": "dist"
     },

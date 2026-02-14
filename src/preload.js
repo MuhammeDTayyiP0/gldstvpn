@@ -7,6 +7,10 @@ contextBridge.exposeInMainWorld('vpnAPI', {
     getStatus: () => ipcRenderer.invoke('vpn:status'),
     getUsageStats: () => ipcRenderer.invoke('vpn:get-usage'),
 
+    // Icon Generation IPC
+    onGenerateIcon: (callback) => ipcRenderer.on('generate-icon', callback),
+    saveIconData: (dataUrl) => ipcRenderer.invoke('save-icon-data', dataUrl),
+
     // Window Controls
     minimize: () => ipcRenderer.invoke('window:minimize'),
     close: () => ipcRenderer.invoke('window:close'),
