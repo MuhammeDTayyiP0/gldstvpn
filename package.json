@@ -39,7 +39,7 @@
     ],
     "win": {
       "target": [
-        "dir"
+        "nsis"
       ]
     },
     "linux": {
