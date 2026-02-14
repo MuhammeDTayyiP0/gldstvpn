@@ -3,6 +3,22 @@ const path = require('path');
 const XrayManager = require('./xray-manager');
 const ProxySettings = require('./proxy-settings');
 
+// Single Instance Lock
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    // Someone tried to run a second instance, we should focus our window.
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  });
+}
+
 let mainWindow;
 let tray;
 let xrayManager;
@@ -84,7 +100,7 @@ function createTray() {
     },
   ]);
 
-  tray.setToolTip('MTE VPN');
+  tray.setToolTip('GeldeSat VPN');
   tray.setContextMenu(contextMenu);
 
   tray.on('double-click', () => {
@@ -166,6 +182,12 @@ app.whenReady().then(() => {
   xrayManager.on('log', (data) => {
     if (mainWindow) {
       mainWindow.webContents.send('xray-log', data);
+    }
+  });
+
+  xrayManager.on('traffic', (data) => {
+    if (mainWindow) {
+      mainWindow.webContents.send('traffic-update', data);
     }
   });
 

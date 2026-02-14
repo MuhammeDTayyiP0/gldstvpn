@@ -20,6 +20,9 @@ contextBridge.exposeInMainWorld('vpnAPI', {
     onXrayLog: (callback) => {
         ipcRenderer.on('xray-log', (event, log) => callback(log));
     },
+    onTrafficUpdate: (callback) => {
+        ipcRenderer.on('traffic-update', (event, data) => callback(data));
+    },
 
     // Remove listeners
     removeAllListeners: (channel) => {

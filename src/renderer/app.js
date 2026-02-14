@@ -15,7 +15,6 @@ class VPNApp {
 
     initElements() {
         this.connectBtn = document.getElementById('connect-btn');
-        this.connectLabel = document.getElementById('connect-label');
         this.statusText = document.getElementById('status-text');
         this.statusDot = document.getElementById('status-dot');
         this.connectionTime = document.getElementById('connection-time');
@@ -24,6 +23,13 @@ class VPNApp {
         this.errorText = document.getElementById('error-text');
         this.btnMinimize = document.getElementById('btn-minimize');
         this.btnClose = document.getElementById('btn-close');
+        this.connectLabel = document.getElementById('connect-label');
+
+        // New stats elements
+        this.statsGrid = document.getElementById('stats-grid');
+        this.downloadSpeed = document.getElementById('download-speed');
+        this.uploadSpeed = document.getElementById('upload-speed');
+        this.totalUsage = document.getElementById('total-usage');
     }
 
     initEventListeners() {
@@ -56,6 +62,11 @@ class VPNApp {
             }
         });
 
+        // Listen for traffic updates
+        window.vpnAPI.onTrafficUpdate((data) => {
+            this.updateTrafficUI(data);
+        });
+
         // Listen for errors
         window.vpnAPI.onConnectionError((error) => {
             this.showError(error);
@@ -65,6 +76,30 @@ class VPNApp {
         window.vpnAPI.onXrayLog((log) => {
             console.log('[Xray]', log);
         });
+    }
+
+    updateTrafficUI(data) {
+        if (!this.isConnected) return;
+
+        this.downloadSpeed.textContent = this.formatSpeed(data.downSpeed);
+        this.uploadSpeed.textContent = this.formatSpeed(data.upSpeed);
+        this.totalUsage.textContent = this.formatData(data.total);
+    }
+
+    formatSpeed(bytes) {
+        if (!bytes || isNaN(bytes) || bytes === 0) return '0.00 KB/s';
+        const kb = bytes / 1024;
+        if (kb < 1024) return `${kb.toFixed(2)} KB/s`;
+        const mb = kb / 1024;
+        return `${mb.toFixed(2)} MB/s`;
+    }
+
+    formatData(bytes) {
+        if (!bytes || isNaN(bytes) || bytes === 0) return '0.00 MB';
+        const mb = bytes / (1024 * 1024);
+        if (mb < 1024) return `${mb.toFixed(2)} MB`;
+        const gb = mb / 1024;
+        return `${gb.toFixed(2)} GB`;
     }
 
     async checkInitialStatus() {
@@ -127,6 +162,7 @@ class VPNApp {
         this.statusText.textContent = 'Bağlanıyor...';
         this.connectLabel.textContent = 'Bağlantı kuruluyor';
         this.connectionTime.style.display = 'none';
+        this.statsGrid.style.display = 'none';
     }
 
     setConnectedState() {
@@ -138,6 +174,7 @@ class VPNApp {
         this.statusText.textContent = 'Bağlandı';
         this.connectLabel.textContent = 'Bağlantıyı kesmek için dokunun';
         this.connectionTime.style.display = 'flex';
+        this.statsGrid.style.display = 'grid';
 
         this.startTimer();
         this.hideError();
@@ -152,6 +189,7 @@ class VPNApp {
         this.statusText.textContent = 'Bağlantı Kesildi';
         this.connectLabel.textContent = 'Bağlanmak için dokunun';
         this.connectionTime.style.display = 'none';
+        this.statsGrid.style.display = 'none';
 
         this.stopTimer();
     }

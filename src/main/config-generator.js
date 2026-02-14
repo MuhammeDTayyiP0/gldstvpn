@@ -23,7 +23,35 @@ class ConfigGenerator {
             log: {
                 loglevel: 'warning',
             },
+            stats: {},
+            api: {
+                tag: 'api',
+                services: ['StatsService'],
+            },
+            policy: {
+                levels: {
+                    0: {
+                        statsUserUplink: true,
+                        statsUserDownlink: true,
+                    },
+                },
+                system: {
+                    statsInboundUplink: true,
+                    statsInboundDownlink: true,
+                    statsOutboundUplink: true,
+                    statsOutboundDownlink: true,
+                },
+            },
             inbounds: [
+                {
+                    tag: 'api',
+                    port: 10085,
+                    listen: '127.0.0.1',
+                    protocol: 'dokodemo-door',
+                    settings: {
+                        address: '127.0.0.1',
+                    },
+                },
                 {
                     tag: 'socks-in',
                     port: config.socksPort,
@@ -102,6 +130,11 @@ class ConfigGenerator {
             routing: {
                 domainStrategy: 'AsIs',
                 rules: [
+                    {
+                        type: 'field',
+                        inboundTag: ['api'],
+                        outboundTag: 'api',
+                    },
                     {
                         type: 'field',
                         outboundTag: 'direct',

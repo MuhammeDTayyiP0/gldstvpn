@@ -91,6 +91,7 @@ class XrayManager extends EventEmitter {
                         // Assume it started successfully after 3 seconds
                         this.running = true;
                         this.startTime = Date.now();
+                        this.startStatsPolling();
                         this.emit('log', 'Xray-core başlatıldı (timeout).');
                         resolve();
                     }
@@ -105,6 +106,7 @@ class XrayManager extends EventEmitter {
                         clearTimeout(startTimeout);
                         this.running = true;
                         this.startTime = Date.now();
+                        this.startStatsPolling();
                         this.emit('log', 'Xray-core başarıyla başlatıldı.');
                         resolve();
                     }
@@ -120,6 +122,7 @@ class XrayManager extends EventEmitter {
                     this.running = false;
                     this.startTime = null;
                     clearTimeout(startTimeout);
+                    this.stopStatsPolling();
                     this.emit('error', `Xray-core başlatılamadı: ${error.message}`);
                     if (!started) {
                         started = true;
@@ -130,6 +133,7 @@ class XrayManager extends EventEmitter {
                 this.process.on('close', (code) => {
                     this.running = false;
                     this.startTime = null;
+                    this.stopStatsPolling();
                     this.emit('log', `Xray-core kapandı (kod: ${code})`);
                     if (!started) {
                         started = true;
@@ -147,9 +151,109 @@ class XrayManager extends EventEmitter {
         }
     }
 
+    startStatsPolling() {
+        this.stopStatsPolling();
+
+        // Initial stats
+        this.lastStats = {
+            up: 0,
+            down: 0,
+            time: Date.now()
+        };
+
+        this.statsInterval = setInterval(() => {
+            if (!this.running) return;
+            this.queryStats();
+        }, 1000);
+    }
+
+    stopStatsPolling() {
+        if (this.statsInterval) {
+            clearInterval(this.statsInterval);
+            this.statsInterval = null;
+        }
+    }
+
+    queryStats() {
+        const binaryPath = this.getXrayBinaryPath();
+        const binaryDir = path.dirname(binaryPath);
+
+        const apiProcess = spawn(binaryPath, ['api', 'statsquery', '--server=127.0.0.1:10085'], {
+            cwd: binaryDir
+        });
+
+        let output = '';
+        let errorOutput = '';
+
+        apiProcess.stdout.on('data', (data) => {
+            output += data.toString();
+        });
+
+        apiProcess.stderr.on('data', (data) => {
+            errorOutput += data.toString();
+        });
+
+        apiProcess.on('close', (code) => {
+            if (code === 0) {
+                try {
+                    if (output.trim()) {
+                        const stats = JSON.parse(output);
+                        this.processStats(stats);
+                    }
+                } catch (e) {
+                    this.emit('log', `Stats JSON Parse Hatası: ${e.message}`);
+                }
+            } else {
+                this.emit('log', `Xray API sorgusu başarısız (kod ${code}): ${errorOutput.trim()}`);
+            }
+        });
+    }
+
+    processStats(data) {
+        if (!data || !data.stat) return;
+
+        let up = 0;
+        let down = 0;
+
+        data.stat.forEach(item => {
+            const val = parseInt(item.value);
+            if (!isNaN(val)) {
+                if (item.name.includes('uplink')) up += val;
+                if (item.name.includes('downlink')) down += val;
+            }
+        });
+
+        const now = Date.now();
+        const deltaTime = (now - this.lastStats.time) / 1000;
+
+        // Safety check for speed calculation
+        let upSpeed = 0;
+        let downSpeed = 0;
+
+        if (deltaTime > 0) {
+            upSpeed = Math.max(0, (up - this.lastStats.up) / deltaTime);
+            downSpeed = Math.max(0, (down - this.lastStats.down) / deltaTime);
+        }
+
+        // Final NaN protection
+        upSpeed = isNaN(upSpeed) ? 0 : upSpeed;
+        downSpeed = isNaN(downSpeed) ? 0 : downSpeed;
+
+        this.lastStats = { up, down, time: now };
+
+        this.emit('traffic', {
+            upSpeed, // bytes per second
+            downSpeed, // bytes per second
+            totalUp: up,
+            totalDown: down,
+            total: up + down
+        });
+    }
+
     async stop() {
         if (!this.process || !this.running) {
             this.running = false;
+            this.stopStatsPolling();
             return;
         }
 
@@ -158,6 +262,7 @@ class XrayManager extends EventEmitter {
                 this.running = false;
                 this.startTime = null;
                 this.process = null;
+                this.stopStatsPolling();
                 this.emit('log', 'Xray-core durduruldu.');
                 resolve();
             });

@@ -9,6 +9,9 @@ Eğer projeniz henüz GitHub'da değilse:
 2. Bilgisayarınızda terminale (PowerShell/CMD) gidin ve şu komutları sırasıyla çalıştırın:
 
 ```bash
+# ⚠️ ÖNEMLİ: Tag atmadan önce package.json dosyasındaki "version" 
+# kısmını da etiketiyle aynı yapmayı unutmayın (örn: "1.1.0").
+
 git init
 git add .
 git commit -m "İlk VPN sürümü"
