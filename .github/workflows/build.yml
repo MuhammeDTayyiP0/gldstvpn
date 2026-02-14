@@ -47,7 +47,7 @@ jobs:
 
       - name: Build Electron App
         run: |
-          npx electron-builder --config package.json --publish never
+          npx electron-builder --publish never
 
       - name: Release & Upload Artifacts
         uses: softprops/action-gh-release@v1
