@@ -8,7 +8,7 @@
     "build:win": "electron-packager . \"GeldeSat VPN\" --platform=win32 --arch=x64 --out=dist --overwrite --extra-resource=resources/xray",
     "build:linux": "electron-packager . \"GeldeSat VPN\" --platform=linux --arch=x64 --out=dist --overwrite --extra-resource=resources/xray"
   },
-  "author": "GeldeSat",
+  "author": "GeldeSat <info@geldesat.com>",
   "license": "MIT",
   "devDependencies": {
     "@electron/packager": "^19.0.5",
