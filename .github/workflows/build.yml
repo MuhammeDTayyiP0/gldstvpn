@@ -30,7 +30,7 @@ jobs:
         run: |
           mkdir -p resources/xray
           wget https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip -O xray.zip
-          unzip xray.zip -d resources/xray
+          unzip -o xray.zip -d resources/xray
           chmod +x resources/xray/xray
           rm xray.zip
 
