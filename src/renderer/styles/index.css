@@ -130,6 +130,7 @@ body {
   display: flex;
   gap: 8px;
   -webkit-app-region: no-drag;
+  z-index: 1001;
 }
 
 .titlebar-btn {
@@ -144,11 +145,15 @@ body {
   cursor: pointer;
   border-radius: 8px;
   transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-app-region: no-drag;
+  position: relative;
+  z-index: 1002;
 }
 
 .titlebar-btn svg {
   width: 14px;
   height: 14px;
+  pointer-events: none;
 }
 
 .titlebar-btn:hover {

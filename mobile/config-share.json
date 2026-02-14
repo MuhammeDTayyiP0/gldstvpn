@@ -1,6 +1,6 @@
 {
     "protocol": "vless",
-    "tag": "GeldeSat VPN",
+    "tag": "MTE VPN",
     "settings": {
         "address": "vpn.geldesat.com",
         "port": 443,
@@ -19,5 +19,5 @@
             "allowInsecure": false
         }
     },
-    "shareUri": "vless://bf5d83c2-69c5-47d0-aa13-234cd4f521b0@vpn.geldesat.com:443?type=ws&security=tls&path=%2Fchat&host=vpn.geldesat.com&sni=vpn.geldesat.com#GeldeSat%20VPN"
+    "shareUri": "vless://bf5d83c2-69c5-47d0-aa13-234cd4f521b0@vpn.geldesat.com:443?type=ws&security=tls&path=%2Fchat&host=vpn.geldesat.com&sni=vpn.geldesat.com#MTE%20VPN"
 }

@@ -1,7 +1,7 @@
 {
-  "name": "geldesat-vpn",
+  "name": "mte-vpn",
   "version": "1.1.1",
-  "description": "GeldeSat VPN - Güvenli VLESS VPN İstemcisi",
+  "description": "MTE VPN - Güvenli VLESS VPN İstemcisi",
   "main": "src/main/main.js",
   "scripts": {
     "dev": "electron .",
@@ -19,8 +19,8 @@
     "makensis": "^3.0.3"
   },
   "build": {
-    "appId": "com.geldesat.vpn",
-    "productName": "GeldeSat VPN",
+    "appId": "com.mte.vpn",
+    "productName": "MTE VPN",
     "directories": {
       "output": "dist"
     },

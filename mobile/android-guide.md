@@ -16,7 +16,7 @@
 
 | Alan | Değer |
 |------|-------|
-| Takma ad | GeldeSat VPN |
+| Takma ad | MTE VPN |
 | Adres | `vpn.geldesat.com` |
 | Port | `443` |
 | UUID | `bf5d83c2-69c5-47d0-aa13-234cd4f521b0` |
@@ -39,12 +39,12 @@
 Aşağıdaki URI'yi kopyalayın ve v2rayNG'de **+** → **Panodan içe aktar** seçeneğini kullanın:
 
 ```
-vless://bf5d83c2-69c5-47d0-aa13-234cd4f521b0@vpn.geldesat.com:443?type=ws&security=tls&path=%2Fchat&host=vpn.geldesat.com&sni=vpn.geldesat.com#GeldeSat%20VPN
+vless://bf5d83c2-69c5-47d0-aa13-234cd4f521b0@vpn.geldesat.com:443?type=ws&security=tls&path=%2Fchat&host=vpn.geldesat.com&sni=vpn.geldesat.com#MTE%20VPN
 ```
 
 ## Bağlanma
 
-1. Ana ekranda **GeldeSat VPN** sunucusunu seçin
+1. Ana ekranda **MTE VPN** sunucusunu seçin
 2. Sağ alt köşedeki **V** butonuna dokunun
 3. VPN izin isteğini onaylayın
 4. Bağlantı başarılı olduğunda üst çubuğta anahtar simgesi görünecektir

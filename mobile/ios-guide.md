@@ -1,4 +1,4 @@
-# iOS - Shadowrocket / Streisand Yapılandırma Rehberi
+# iOS - MTE VPN Yapılandırma Rehberi (Shadowrocket / Streisand)
 
 ## Uygulama Seçenekleri
 
@@ -21,7 +21,7 @@ iOS'ta VLESS protokolünü destekleyen uygulamalar:
 1. Aşağıdaki URI'yi kopyalayın:
 
 ```
-vless://bf5d83c2-69c5-47d0-aa13-234cd4f521b0@vpn.geldesat.com:443?type=ws&security=tls&path=%2Fchat&host=vpn.geldesat.com&sni=vpn.geldesat.com#GeldeSat%20VPN
+vless://bf5d83c2-69c5-47d0-aa13-234cd4f521b0@vpn.geldesat.com:443?type=ws&security=tls&path=%2Fchat&host=vpn.geldesat.com&sni=vpn.geldesat.com#MTE%20VPN
 ```
 
 2. Shadowrocket'i açın
@@ -60,7 +60,7 @@ vless://bf5d83c2-69c5-47d0-aa13-234cd4f521b0@vpn.geldesat.com:443?type=ws&securi
 
 ## Bağlanma
 
-1. Ana ekranda **GeldeSat VPN** sunucusunu seçin
+1. Ana ekranda **MTE VPN** sunucusunu seçin
 2. Bağlantı düğmesine basın
 3. VPN izin isteğini onaylayın (ilk seferde)
 4. Üst çubukta **VPN** simgesi görünecektir

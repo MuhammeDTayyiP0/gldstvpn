@@ -1,4 +1,4 @@
-# 🚀 GitHub Actions ile Otomatik Derleme Rehberi
+# 🚀 MTE VPN - GitHub Actions Yayınlama Rehberi
 
 Bu rehber, projenizi GitHub'a yüklediğinizde Windows (`.exe`) ve Linux (`.deb`, `.AppImage`) paketlerinin nasıl otomatik olarak hazırlanacağını anlatır.
 

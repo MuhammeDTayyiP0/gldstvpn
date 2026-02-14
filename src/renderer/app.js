@@ -1,4 +1,4 @@
-// GeldeSat VPN - Renderer Application Logic
+// MTE VPN - Renderer Application Logic
 
 class VPNApp {
     constructor() {
@@ -38,10 +38,12 @@ class VPNApp {
 
         // Window controls
         this.btnMinimize.addEventListener('click', () => {
+            console.log('Minimize button clicked');
             window.vpnAPI.minimize();
         });
 
         this.btnClose.addEventListener('click', () => {
+            console.log('Close button clicked');
             window.vpnAPI.close();
         });
     }

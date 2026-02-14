@@ -1,4 +1,4 @@
-# GeldeSat VPN
+# MTE VPN
 
 Güvenli ve hızlı VLESS VPN istemcisi. Windows ve Linux masaüstü uygulaması + Android/iOS yapılandırma rehberleri.
 
@@ -40,7 +40,7 @@ npm run build:linux
 
 ### Hızlı URI (Kopyala-Yapıştır)
 ```
-vless://bf5d83c2-69c5-47d0-aa13-234cd4f521b0@vpn.geldesat.com:443?type=ws&security=tls&path=%2Fchat&host=vpn.geldesat.com&sni=vpn.geldesat.com#GeldeSat%20VPN
+vless://bf5d83c2-69c5-47d0-aa13-234cd4f521b0@vpn.geldesat.com:443?type=ws&security=tls&path=%2Fchat&host=vpn.geldesat.com&sni=vpn.geldesat.com#MTE%20VPN
 ```
 
 ## 📁 Proje Yapısı
