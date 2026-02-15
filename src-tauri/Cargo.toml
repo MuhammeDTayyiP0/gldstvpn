@@ -6,6 +6,10 @@ authors = ["GeldeSat"]
 edition = "2021"
 rust-version = "1.70"
 
+[features]
+# this feature is used for production builds or when `devPath` points to the filesystem
+custom-protocol = ["tauri/custom-protocol"]
+
 [build-dependencies]
 tauri-build = { version = "1.5", features = [] }
 
