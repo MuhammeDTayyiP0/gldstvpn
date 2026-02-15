@@ -35,6 +35,7 @@ impl XrayManager {
             resource_dir.join(binary_name),                          // Flattened: resources/xray
             resource_dir.join("xray").join(binary_name),             // Nested: resources/xray/xray
             resource_dir.join("resources").join("xray").join(binary_name), // Old Logic: resources/resources/xray/xray
+            resource_dir.join("resources").join(binary_name),        // Standard: resources/xray (Fix for Linux/Win)
         ];
 
         for p in &possible_paths {
