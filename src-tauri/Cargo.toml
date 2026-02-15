@@ -1,0 +1,19 @@
+[package]
+name = "v204-vpn"
+version = "2.5.0"
+description = "V204 VPN - Ultra Premium VLESS Client"
+authors = ["GeldeSat"]
+edition = "2021"
+rust-version = "1.70"
+
+[build-dependencies]
+tauri-build = { version = "1.5", features = [] }
+
+[dependencies]
+tauri = { version = "1.5", features = ["system-tray", "window-all", "path-all", "fs-all", "shell-execute", "shell-open", "protocol-asset"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+chrono = "0.4"
+# For Xray process management
+os_pipe = "1.1"
+shared_child = "1.0"

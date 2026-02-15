@@ -1,4 +1,7 @@
-// V204 VPN - Renderer Application Logic v3.0 Ultra Premium
+// V204 VPN - Tauri Renderer Logic v4.1 (Ported from gldstvpn 2.4.6)
+const invoke = window.__TAURI__.invoke;
+const { appWindow } = window.__TAURI__.window;
+const { listen } = window.__TAURI__.event;
 
 class VPNApp {
     constructor() {
@@ -6,13 +9,25 @@ class VPNApp {
         this.isConnecting = false;
         this.connectionStartTime = null;
         this.timerInterval = null;
-        this.sparkleInterval = null;
         this.ambientParticleInterval = null;
+        this.lastStats = { up: 0, down: 0, timestamp: Date.now() };
 
+        this.initPlatform();
         this.initElements();
         this.initEventListeners();
-        this.initIPCListeners();
-        this.checkInitialStatus();
+        this.initTauriListeners();
+    }
+
+    initPlatform() {
+        // Detect platform to apply optimizations (especially for Linux)
+        const platform = window.navigator.platform.toLowerCase();
+        if (platform.includes('linux')) {
+            document.body.classList.add('platform-linux');
+        } else if (platform.includes('win')) {
+            document.body.classList.add('platform-windows');
+        } else if (platform.includes('mac')) {
+            document.body.classList.add('platform-macos');
+        }
     }
 
     initElements() {
@@ -32,7 +47,6 @@ class VPNApp {
         this.successBurst = document.getElementById('success-burst');
         this.disconnectBurst = document.getElementById('disconnect-burst');
         this.particlesContainer = document.getElementById('particles-container');
-        this.globeContainer = document.getElementById('globe-container');
         this.screenFlash = document.getElementById('screen-flash');
 
         // Stats elements
@@ -57,28 +71,25 @@ class VPNApp {
         this.connectBtn.addEventListener('click', () => this.toggleConnection());
 
         this.btnMinimize.addEventListener('click', () => {
-            console.log('Minimize button clicked');
-            window.vpnAPI.minimize();
+            appWindow.minimize();
         });
 
         this.btnClose.addEventListener('click', () => {
-            console.log('Close button clicked');
-            window.vpnAPI.close();
-        });
-
-        this.btnClose.addEventListener('click', () => {
-            console.log('Close button clicked');
-            window.vpnAPI.close();
+            appWindow.close();
         });
 
         // Profile Modal Listeners
-        this.btnProfile.addEventListener('click', () => this.openProfileModal());
-        this.btnCloseProfile.addEventListener('click', () => this.closeProfileModal());
-
-        // Close on outside click
-        this.profileModal.addEventListener('click', (e) => {
-            if (e.target === this.profileModal) this.closeProfileModal();
-        });
+        if (this.btnProfile) {
+            this.btnProfile.addEventListener('click', () => this.openProfileModal());
+        }
+        if (this.btnCloseProfile) {
+            this.btnCloseProfile.addEventListener('click', () => this.closeProfileModal());
+        }
+        if (this.profileModal) {
+            this.profileModal.addEventListener('click', (e) => {
+                if (e.target === this.profileModal) this.closeProfileModal();
+            });
+        }
     }
 
     openProfileModal() {
@@ -92,48 +103,184 @@ class VPNApp {
 
     async updateUsageStats() {
         try {
-            const stats = await window.vpnAPI.getUsageStats();
-            // stats: { day, week, month, all } (in bytes)
-
-            this.usageDay.textContent = this.formatData(stats.day);
-            this.usageWeek.textContent = this.formatData(stats.week);
-            this.usageMonth.textContent = this.formatData(stats.month);
-            this.usageAll.textContent = this.formatData(stats.all);
+            const stats = await invoke('get_usage');
+            // stats: { day, week, month, all } in bytes
+            if (this.usageDay) this.usageDay.textContent = this.formatData(stats.day);
+            if (this.usageWeek) this.usageWeek.textContent = this.formatData(stats.week);
+            if (this.usageMonth) this.usageMonth.textContent = this.formatData(stats.month);
+            if (this.usageAll) this.usageAll.textContent = this.formatData(stats.all);
         } catch (error) {
             console.error('Failed to update usage stats:', error);
-            this.usageDay.textContent = '--';
-            this.usageWeek.textContent = '--';
-            this.usageMonth.textContent = '--';
-            this.usageAll.textContent = '--';
+            if (this.usageDay) this.usageDay.textContent = '--';
+            if (this.usageWeek) this.usageWeek.textContent = '--';
+            if (this.usageMonth) this.usageMonth.textContent = '--';
+            if (this.usageAll) this.usageAll.textContent = '--';
         }
     }
 
-    async handleIconGeneration(svgContent) {
-        console.log('Generating transparent icon...');
-        const img = new Image();
-        const svgBlob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
-        const url = URL.createObjectURL(svgBlob);
+    async initTauriListeners() {
+        // Listen for Xray Stats from Rust backend
+        await listen('xray-stats', (event) => {
+            try {
+                let data = event.payload;
+                if (typeof data === 'string') {
+                    data = JSON.parse(data);
+                }
+                this.processStats(data);
+            } catch (e) {
+                console.error('Stats parse error:', e);
+            }
+        });
+    }
 
-        img.onload = async () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 512;
-            canvas.height = 512;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, 512, 512);
+    processStats(data) {
+        if (!data || !data.stat) return;
 
-            const pngDataUrl = canvas.toDataURL('image/png');
-            await window.vpnAPI.saveIconData(pngDataUrl);
-            console.log('Icon generated and sent to main process.');
-            URL.revokeObjectURL(url);
-        };
-        img.src = url;
+        let up = 0;
+        let down = 0;
+
+        // Only count outbound>>>proxy traffic to avoid double/triple counting.
+        // Xray reports stats at multiple levels (inbound, outbound, user) and
+        // summing all of them inflates the real numbers by 2-3x.
+        data.stat.forEach(item => {
+            const name = item.name || '';
+            if (!name.startsWith('outbound>>>proxy>>>')) return;
+
+            const val = parseInt(item.value);
+            if (!isNaN(val)) {
+                if (name.includes('uplink')) up += val;
+                if (name.includes('downlink')) down += val;
+            }
+        });
+
+        const now = Date.now();
+        const deltaT = (now - this.lastStats.timestamp) / 1000;
+
+        let upSpeed = 0;
+        let downSpeed = 0;
+
+        if (deltaT > 0) {
+            upSpeed = Math.max(0, (up - this.lastStats.up) / deltaT);
+            downSpeed = Math.max(0, (down - this.lastStats.down) / deltaT);
+        }
+
+        // NaN protection
+        upSpeed = isNaN(upSpeed) ? 0 : upSpeed;
+        downSpeed = isNaN(downSpeed) ? 0 : downSpeed;
+
+        this.lastStats = { up, down, timestamp: now };
+
+        this.updateTrafficUI({
+            upSpeed,
+            downSpeed,
+            total: up + down
+        });
+    }
+
+    updateTrafficUI(data) {
+        if (!this.isConnected) return;
+        if (this.downloadSpeed) this.downloadSpeed.textContent = this.formatSpeed(data.downSpeed);
+        if (this.uploadSpeed) this.uploadSpeed.textContent = this.formatSpeed(data.upSpeed);
+        if (this.totalUsage) this.totalUsage.textContent = this.formatData(data.total);
+    }
+
+    formatSpeed(bytes) {
+        if (!bytes || isNaN(bytes) || bytes === 0) return '0.00 KB/s';
+        const kb = bytes / 1024;
+        if (kb < 1024) return `${kb.toFixed(2)} KB/s`;
+        const mb = kb / 1024;
+        return `${mb.toFixed(2)} MB/s`;
+    }
+
+    formatData(bytes) {
+        if (!bytes || isNaN(bytes) || bytes === 0) return '0.00 MB';
+        const mb = bytes / (1024 * 1024);
+        if (mb < 1024) return `${mb.toFixed(2)} MB`;
+        const gb = mb / 1024;
+        return `${gb.toFixed(2)} GB`;
+    }
+
+    async toggleConnection() {
+        if (this.isConnecting) return;
+
+        this.hideError();
+        this.triggerRipple();
+        this.triggerRipple(); // Double ripple
+
+        if (this.isConnected) {
+            await this.disconnect();
+        } else {
+            await this.connect();
+        }
+    }
+
+    async connect() {
+        this.setConnectingState();
+
+        try {
+            const result = await invoke('start_vpn');
+            console.log('VPN Started:', result);
+            this.setConnectedState();
+        } catch (error) {
+            console.error('VPN Error:', error);
+            this.setDisconnectedState();
+            this.showError(error || 'Bağlantı kurulamadı');
+        }
+    }
+
+    async disconnect() {
+        this.triggerScreenFlash('flash-disconnect');
+
+        try {
+            await invoke('stop_vpn');
+            this.setDisconnectedState();
+        } catch (error) {
+            console.error('Disconnect error:', error);
+            this.setDisconnectedState();
+        }
+    }
+
+    // =========================================
+    //            ANIMATION ENGINE
+    // =========================================
+
+    triggerScreenFlash(className) {
+        if (!this.screenFlash) return;
+        this.screenFlash.className = 'screen-flash';
+        void this.screenFlash.offsetWidth;
+        this.screenFlash.classList.add(className);
+        this.screenFlash.addEventListener('animationend', () => {
+            this.screenFlash.className = 'screen-flash';
+        }, { once: true });
+    }
+
+    triggerRipple() {
+        if (!this.rippleContainer) return;
+        const ripple = document.createElement('div');
+        ripple.classList.add('ripple', 'animate');
+        this.rippleContainer.appendChild(ripple);
+        ripple.addEventListener('animationend', () => ripple.remove());
+    }
+
+    triggerShockwave() {
+        if (!this.shockwave) return;
+        this.shockwave.classList.remove('animate');
+        void this.shockwave.offsetWidth;
+        this.shockwave.classList.add('animate');
+        this.shockwave.addEventListener('animationend', () => {
+            this.shockwave.classList.remove('animate');
+        }, { once: true });
+    }
+
+    triggerSuccessBurst() {
+        this.triggerScreenFlash('flash-success');
     }
 
     animateStatusText(text) {
+        if (!this.statusText) return;
         this.statusText.classList.remove('animate-change');
         void this.statusText.offsetWidth;
 
-        // Cyberpunk Text Decoding Effect
         const originalText = text;
         const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&";
         let iterations = 0;
@@ -160,170 +307,14 @@ class VPNApp {
         }, 30);
     }
 
-    initIPCListeners() {
-        window.vpnAPI.onConnectionStatus((status) => {
-            switch (status) {
-                case 'connected':
-                    this.setConnectedState();
-                    break;
-                case 'disconnected':
-                    this.setDisconnectedState();
-                    break;
-                case 'connecting':
-                    // Initialize UI
-                    this.updateConnectionStatus('disconnected'); // Initial state
-                    break;
-            }
-        });
-
-        window.vpnAPI.onTrafficUpdate((data) => {
-            this.updateTrafficUI(data);
-        });
-
-
-
-        window.vpnAPI.onConnectionError((error) => {
-            this.showError(error);
-        });
-
-        window.vpnAPI.onXrayLog((log) => {
-            console.log('[Xray]', log);
-        });
-    }
-
-    updateTrafficUI(data) {
-        if (!this.isConnected) return;
-        this.downloadSpeed.textContent = this.formatSpeed(data.downSpeed);
-        this.uploadSpeed.textContent = this.formatSpeed(data.upSpeed);
-        this.totalUsage.textContent = this.formatData(data.total);
-    }
-
-    formatSpeed(bytes) {
-        if (!bytes || isNaN(bytes) || bytes === 0) return '0.00 KB/s';
-        const kb = bytes / 1024;
-        if (kb < 1024) return `${kb.toFixed(2)} KB/s`;
-        const mb = kb / 1024;
-        return `${mb.toFixed(2)} MB/s`;
-    }
-
-    formatData(bytes) {
-        if (!bytes || isNaN(bytes) || bytes === 0) return '0.00 MB';
-        const mb = bytes / (1024 * 1024);
-        if (mb < 1024) return `${mb.toFixed(2)} MB`;
-        const gb = mb / 1024;
-        return `${gb.toFixed(2)} GB`;
-    }
-
-    async checkInitialStatus() {
-        try {
-            const status = await window.vpnAPI.getStatus();
-            if (status.connected) {
-                this.setConnectedState();
-            }
-        } catch (error) {
-            console.error('Status check failed:', error);
-        }
-    }
-
-    async toggleConnection() {
-        if (this.isConnecting) return;
-
-        this.hideError();
-        this.triggerRipple();
-        this.triggerRipple(); // Double ripple for bigger effect
-
-        if (this.isConnected) {
-            await this.disconnect();
-        } else {
-            await this.connect();
-        }
-    }
-
-    async connect() {
-        this.setConnectingState();
-
-        try {
-            const result = await window.vpnAPI.connect();
-            if (result.success) {
-                this.setConnectedState();
-            } else {
-                this.setDisconnectedState();
-                this.showError(result.error || 'Bağlantı kurulamadı');
-            }
-        } catch (error) {
-            this.setDisconnectedState();
-            this.showError(error.message || 'Bağlantı hatası');
-        }
-    }
-
-    async disconnect() {
-        this.triggerScreenFlash('flash-disconnect');
-
-        try {
-            const result = await window.vpnAPI.disconnect();
-            if (result.success) {
-                this.setDisconnectedState();
-            }
-        } catch (error) {
-            console.error('Disconnect error:', error);
-            this.setDisconnectedState();
-        }
-    }
-
-    // =========================================
-    //            ANIMATION ENGINE
-    // =========================================
-
-    triggerScreenFlash(className) {
-        this.screenFlash.className = 'screen-flash';
-        void this.screenFlash.offsetWidth;
-        this.screenFlash.classList.add(className);
-        this.screenFlash.addEventListener('animationend', () => {
-            this.screenFlash.className = 'screen-flash';
-        }, { once: true });
-    }
-
-    triggerRipple() {
-        const ripple = document.createElement('div');
-        ripple.classList.add('ripple', 'animate');
-        this.rippleContainer.appendChild(ripple);
-        ripple.addEventListener('animationend', () => ripple.remove());
-    }
-
-    triggerShockwave() {
-        this.shockwave.classList.remove('animate');
-        void this.shockwave.offsetWidth;
-        this.shockwave.classList.add('animate');
-        this.shockwave.addEventListener('animationend', () => {
-            this.shockwave.classList.remove('animate');
-        }, { once: true });
-    }
-
-    triggerSuccessBurst() {
-        // Screen flash
-        this.triggerScreenFlash('flash-success');
-    }
-
-
-
-
-
-    animateStatusText(text) {
-        this.statusText.classList.remove('animate-change');
-        void this.statusText.offsetWidth;
-        this.statusText.textContent = text;
-        this.statusText.classList.add('animate-change');
-    }
-
     startConnectedParticles() {
         this.stopConnectedParticles();
+        if (!this.particlesContainer) return;
 
-        // Spawn initial burst
         for (let i = 0; i < 5; i++) {
             setTimeout(() => this.spawnFloatingParticle(), i * 300);
         }
 
-        // Continuous particles
         this.ambientParticleInterval = setInterval(() => {
             if (!this.isConnected) return;
             this.spawnFloatingParticle();
@@ -335,7 +326,7 @@ class VPNApp {
             clearInterval(this.ambientParticleInterval);
             this.ambientParticleInterval = null;
         }
-        // Fade out existing particles
+        if (!this.particlesContainer) return;
         const particles = this.particlesContainer.querySelectorAll('.particle');
         particles.forEach(p => {
             p.style.transition = 'opacity 0.5s';
@@ -345,6 +336,7 @@ class VPNApp {
     }
 
     spawnFloatingParticle() {
+        if (!this.particlesContainer) return;
         const particle = document.createElement('div');
         particle.classList.add('particle');
 
@@ -385,33 +377,39 @@ class VPNApp {
         document.body.className = 'connecting';
         this.animateStatusText('Bağlanıyor...');
         this.connectLabel.textContent = 'Bağlantı kuruluyor';
-        this.connectionTime.style.display = 'none';
-        this.statsGrid.style.display = 'none';
-        this.statsGrid.classList.remove('animate-in');
+        if (this.connectionTime) this.connectionTime.style.display = 'none';
+        if (this.statsGrid) {
+            this.statsGrid.style.display = 'none';
+            this.statsGrid.classList.remove('animate-in');
+        }
     }
 
     setConnectedState() {
         this.isConnected = true;
         this.isConnecting = false;
         this.connectionStartTime = Date.now();
+        this.lastStats = { up: 0, down: 0, timestamp: Date.now() };
 
         document.body.className = 'connected';
         this.animateStatusText('Bağlandı');
         this.connectLabel.textContent = 'Bağlantıyı kesmek için dokunun';
-        this.connectionTime.style.display = 'flex';
-        this.statsGrid.style.display = 'grid';
 
-        // Staggered stats animation
-        requestAnimationFrame(() => {
-            this.statsGrid.classList.add('animate-in');
-        });
+        if (this.connectionTime) this.connectionTime.style.display = 'flex';
+        if (this.statsGrid) {
+            this.statsGrid.style.display = 'grid';
+            requestAnimationFrame(() => {
+                this.statsGrid.classList.add('animate-in');
+            });
+        }
 
-        // MASSIVE success animation sequence
+        // Reset speed displays
+        if (this.downloadSpeed) this.downloadSpeed.textContent = '0.00 KB/s';
+        if (this.uploadSpeed) this.uploadSpeed.textContent = '0.00 KB/s';
+        if (this.totalUsage) this.totalUsage.textContent = '0.00 MB';
+
+        // Success animations
         this.triggerSuccessBurst();
-
-        // Start ambient particles
         this.startConnectedParticles();
-
         this.startTimer();
         this.hideError();
     }
@@ -424,9 +422,12 @@ class VPNApp {
         document.body.className = '';
         this.animateStatusText('Bağlantı Kesildi');
         this.connectLabel.textContent = 'Bağlanmak için dokunun';
-        this.connectionTime.style.display = 'none';
-        this.statsGrid.style.display = 'none';
-        this.statsGrid.classList.remove('animate-in');
+
+        if (this.connectionTime) this.connectionTime.style.display = 'none';
+        if (this.statsGrid) {
+            this.statsGrid.style.display = 'none';
+            this.statsGrid.classList.remove('animate-in');
+        }
 
         this.stopConnectedParticles();
         this.stopTimer();
@@ -449,17 +450,18 @@ class VPNApp {
             clearInterval(this.timerInterval);
             this.timerInterval = null;
         }
-        this.timeDisplay.textContent = '00:00:00';
+        if (this.timeDisplay) this.timeDisplay.textContent = '00:00:00';
     }
 
     showError(message) {
+        if (!this.errorContainer) return;
         this.errorText.textContent = message;
         this.errorContainer.style.display = 'block';
         setTimeout(() => this.hideError(), 8000);
     }
 
     hideError() {
-        this.errorContainer.style.display = 'none';
+        if (this.errorContainer) this.errorContainer.style.display = 'none';
     }
 }
 

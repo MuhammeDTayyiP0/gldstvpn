@@ -1,17 +1,20 @@
 {
   "name": "v204",
-  "version": "2.4.6",
+  "version": "2.5.0",
   "description": "V204 - Güvenli VLESS VPN İstemcisi",
   "main": "src/main/main.js",
   "scripts": {
-    "dev": "electron .",
-    "build:win": "electron-packager . \"V204 VPN\" --platform=win32 --arch=x64 --out=dist --overwrite --extra-resource=resources/xray --icon=resources/icon.png",
-    "build:linux": "electron-packager . \"V204 VPN\" --platform=linux --arch=x64 --out=dist --overwrite --extra-resource=resources/xray"
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "build:win": "tauri build --target x86_64-pc-windows-msvc",
+    "build:linux": "tauri build --target x86_64-unknown-linux-gnu",
+    "tauri": "tauri"
   },
   "author": "GeldeSat <info@geldesat.com>",
   "license": "MIT",
   "devDependencies": {
     "@electron/packager": "^19.0.5",
+    "@tauri-apps/cli": "^1.6.3",
     "electron": "^28.1.0",
     "electron-builder": "^24.9.1",
     "electron-winstaller": "^5.4.0",

@@ -1,0 +1,26 @@
+   Compiling vswhom-sys v0.1.3
+    Checking wry v0.24.11
+    Checking tauri-runtime v0.14.6
+    Checking tauri-runtime-wry v0.14.11
+   Compiling vswhom v0.1.0
+   Compiling embed-resource v2.5.2
+   Compiling tauri-winres v0.1.1
+   Compiling tauri-build v1.5.6
+    Checking tauri v1.8.3
+   Compiling v204-vpn v2.4.6 (D:\Sites\ggl ag\vpnugulaması\src-tauri)
+error: failed to run custom build command for `v204-vpn v2.4.6 (D:\Sites\ggl ag\vpnugulaması\src-tauri)`
+
+Caused by:
+  process didn't exit successfully: `C:\tauri_target\debug\build\v204-vpn-861950e113b07108\build-script-build` (exit code: 1)
+  --- stdout
+  cargo:rerun-if-env-changed=TAURI_CONFIG
+  cargo:rerun-if-changed=tauri.conf.json
+  cargo:rustc-check-cfg=cfg(desktop)
+  cargo:rustc-cfg=desktop
+  cargo:rustc-check-cfg=cfg(mobile)
+  cargo:rustc-check-cfg=cfg(dev)
+  cargo:rustc-cfg=dev
+
+        The `tauri` dependency features on the `Cargo.toml` file does not match the allowlist defined under `tauri.conf.json`.
+        Please run `tauri dev` or `tauri build` or remove the `system-tray, window-all, path-all` features.
+      

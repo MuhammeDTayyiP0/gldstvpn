@@ -1,0 +1,73 @@
+{
+    "build": {
+        "devPath": "../src/renderer",
+        "distDir": "../src/renderer",
+        "withGlobalTauri": true
+    },
+    "package": {
+        "productName": "V204 VPN",
+        "version": "2.5.0"
+    },
+    "tauri": {
+        "allowlist": {
+            "all": false,
+            "window": {
+                "all": true
+            },
+            "path": {
+                "all": true
+            },
+            "fs": {
+                "all": true,
+                "scope": [
+                    "$APP/*",
+                    "$APPDATA/*",
+                    "$RESOURCE/*"
+                ]
+            },
+            "shell": {
+                "all": false,
+                "open": true,
+                "execute": true,
+                "sidecar": false
+            },
+            "protocol": {
+                "asset": true,
+                "assetScope": [
+                    "**"
+                ]
+            }
+        },
+        "bundle": {
+            "active": true,
+            "targets": "all",
+            "identifier": "com.v204.vpn",
+            "icon": [
+                "icons/32x32.png",
+                "icons/128x128.png",
+                "icons/128x128@2x.png",
+                "icons/icon.icns",
+                "icons/icon.ico"
+            ],
+            "resources": [
+                "../resources/xray/*"
+            ]
+        },
+        "windows": [
+            {
+                "label": "main",
+                "title": "V204 VPN",
+                "width": 480,
+                "height": 720,
+                "decorations": false,
+                "transparent": true,
+                "fullscreen": false,
+                "resizable": false
+            }
+        ],
+        "systemTray": {
+            "iconPath": "icons/icon.png",
+            "iconAsTemplate": true
+        }
+    }
+}

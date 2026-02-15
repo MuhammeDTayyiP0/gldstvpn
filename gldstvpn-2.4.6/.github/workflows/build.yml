@@ -1,0 +1,64 @@
+name: Build/Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download Xray Core (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          mkdir -p resources/xray
+          wget https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip -O xray.zip
+          unzip -o xray.zip -d resources/xray
+          chmod +x resources/xray/xray
+          rm xray.zip
+
+      - name: Download Xray Core (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          if (!(Test-Path resources/xray)) { mkdir resources/xray }
+          Invoke-WebRequest -Uri "https://github.com/XTLS/Xray-core/releases/latest/download/Xray-windows-64.zip" -OutFile "xray.zip"
+          Expand-Archive -Path "xray.zip" -DestinationPath "resources/xray" -Force
+          Remove-Item "xray.zip"
+
+      - name: Build Electron App
+        run: |
+          npx electron-builder --publish never
+
+      - name: Release & Upload Artifacts
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "${{ github.ref_name }} - V204 VPN"
+          draft: false
+          prerelease: false
+          files: |
+            dist/*.exe
+            dist/*.deb
+            dist/*.AppImage
+          token: ${{ secrets.GITHUB_TOKEN }}
