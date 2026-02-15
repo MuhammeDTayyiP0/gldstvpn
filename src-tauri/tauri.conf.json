@@ -60,7 +60,7 @@
                 "depends": [],
                 "desktopTemplate": null
             },
-            "category": "Network",
+            "category": "Utility",
             "windows": {
                 "nsis": {
                     "installMode": "both",
