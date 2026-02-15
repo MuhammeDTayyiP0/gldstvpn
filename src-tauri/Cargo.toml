@@ -15,7 +15,6 @@ tauri-build = { version = "1.5", features = [] }
 
 [dependencies]
 tauri = { version = "1.6", features = ["system-tray", "window-all", "path-all", "fs-all", "shell-execute", "shell-open", "protocol-asset"] }
-webkit2gtk = { version = "0.18", features = ["v4_1"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 chrono = "0.4"
