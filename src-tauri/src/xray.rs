@@ -30,25 +30,35 @@ impl XrayManager {
         let resource_dir = self.app_handle.path().resource_dir()
             .map_err(|e| format!("Failed to get resource dir: {}", e))?;
 
-        let resource_path = resource_dir.join("resources").join("xray").join(binary_name);
-        if resource_path.exists() {
-            return Ok(resource_path);
+        // Possible locations for the binary in production
+        let possible_paths = [
+            resource_dir.join(binary_name),                          // Flattened: resources/xray
+            resource_dir.join("xray").join(binary_name),             // Nested: resources/xray/xray
+            resource_dir.join("resources").join("xray").join(binary_name), // Old Logic: resources/resources/xray/xray
+        ];
+
+        for p in &possible_paths {
+            if p.exists() {
+                println!("[Xray] Found binary at: {:?}", p);
+                return Ok(p.clone());
+            }
         }
 
-        // Fallback or dev paths
-        let paths = [
+        // Fallback or dev paths (Relative to CWD)
+        let dev_paths = [
             PathBuf::from("resources").join("xray").join(binary_name),
             PathBuf::from("..").join("resources").join("xray").join(binary_name),
             PathBuf::from(".").join(binary_name),
         ];
 
-        for p in paths {
+        for p in dev_paths {
             if p.exists() {
+                println!("[Xray] Found binary (dev) at: {:?}", p);
                 return Ok(p);
             }
         }
 
-        Err(format!("Xray binary not found at {:?} or fallback paths.", resource_path))
+        Err(format!("Xray binary not found. Checked: {:?} and dev paths.", possible_paths))
     }
 
     fn get_config_path(&self) -> PathBuf {
