@@ -11,13 +11,13 @@ echo 2. Committing...
 git commit -m "feat(v3.0.0): Major Update - Hafif Mod, Fix Build, Linux Icon"
 echo.
 
-echo 3. Tagging v3.0.0...
-git tag v3.0.0
+echo 3. Tagging v3.0.0 (Force)...
+git tag -f v3.0.0
 echo.
 
-echo 4. Pushing to GitHub...
+echo 4. Pushing to GitHub (Force tags)...
 git push origin main
-git push origin v3.0.0
+git push origin v3.0.0 --force
 echo.
 
 echo ==========================================
