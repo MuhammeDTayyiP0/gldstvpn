@@ -30,15 +30,18 @@ impl XrayManager {
         let resource_dir = self.app_handle.path().resource_dir()
             .map_err(|e| format!("Failed to get resource dir: {}", e))?;
 
+        println!("[Xray] resource_dir = {:?}", resource_dir);
+
         // Possible locations for the binary in production
         let possible_paths = [
-            resource_dir.join(binary_name),                          // Flattened: resources/xray
-            resource_dir.join("xray").join(binary_name),             // Nested: resources/xray/xray
-            resource_dir.join("resources").join("xray").join(binary_name), // Old Logic: resources/resources/xray/xray
-            resource_dir.join("resources").join(binary_name),        // Standard: resources/xray (Fix for Linux/Win)
+            resource_dir.join("xray").join(binary_name),             // Map-based bundling: xray/ subfolder
+            resource_dir.join(binary_name),                          // Flattened: direct in resource dir
+            resource_dir.join("resources").join("xray").join(binary_name), // Legacy: resources/xray/
+            resource_dir.join("resources").join(binary_name),        // Legacy: resources/
         ];
 
         for p in &possible_paths {
+            println!("[Xray] Checking: {:?} -> exists: {}", p, p.exists());
             if p.exists() {
                 println!("[Xray] Found binary at: {:?}", p);
                 return Ok(p.clone());
@@ -53,13 +56,28 @@ impl XrayManager {
         ];
 
         for p in dev_paths {
+            println!("[Xray] Checking dev: {:?} -> exists: {}", p, p.exists());
             if p.exists() {
                 println!("[Xray] Found binary (dev) at: {:?}", p);
                 return Ok(p);
             }
         }
 
-        Err(format!("Xray binary not found. Checked: {:?} and dev paths.", possible_paths))
+        // List directory contents for debugging
+        println!("[Xray] Listing resource_dir contents:");
+        if let Ok(entries) = std::fs::read_dir(&resource_dir) {
+            for entry in entries.flatten() {
+                println!("[Xray]   {:?}", entry.path());
+            }
+        }
+        if let Ok(entries) = std::fs::read_dir(resource_dir.join("xray")) {
+            println!("[Xray] Listing resource_dir/xray contents:");
+            for entry in entries.flatten() {
+                println!("[Xray]   {:?}", entry.path());
+            }
+        }
+
+        Err(format!("Xray binary not found. resource_dir={:?}, checked {:?}", resource_dir, possible_paths))
     }
 
     fn get_config_path(&self) -> PathBuf {

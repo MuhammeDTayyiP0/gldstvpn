@@ -732,7 +732,7 @@ body {
   background: rgba(2, 2, 8, 0.96);
   backdrop-filter: blur(30px);
   border-bottom: 1px solid rgba(99, 102, 241, 0.04);
-  /* -webkit-app-region: drag; Removed to avoid conflict with data-tauri-drag-region */
+  -webkit-app-region: drag;
   z-index: 100;
   position: relative;
 }

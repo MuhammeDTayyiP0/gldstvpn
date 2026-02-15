@@ -44,9 +44,9 @@
             "icons/icon.ico",
             "icons/icon.png"
         ],
-        "resources": [
-            "../resources/xray/*"
-        ],
+        "resources": {
+            "../resources/xray/": "xray/"
+        },
         "linux": {
             "deb": {
                 "depends": [],
