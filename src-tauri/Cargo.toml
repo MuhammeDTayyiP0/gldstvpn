@@ -1,6 +1,6 @@
 [package]
 name = "v204-vpn"
-version = "2.5.0"
+version = "2.6.0"
 description = "V204 VPN - Ultra Premium VLESS Client"
 authors = ["GeldeSat"]
 edition = "2021"

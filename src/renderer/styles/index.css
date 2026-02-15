@@ -2283,3 +2283,47 @@ body.connected .nebula-2 {
   letter-spacing: 0.5px;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
+
+/* === General Performance Optimizations === */
+
+/* GPU compositing hints for animated containers */
+.globe-container,
+.connect-btn-wrapper,
+.aurora-layer,
+.nebula-layer,
+.decor-glow-1,
+.decor-glow-2,
+.decor-glow-3,
+.decor-glow-4,
+.decor-glow-5 {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Layout containment for particle system */
+.particles-container {
+  contain: layout style;
+}
+
+/* Respect OS reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .aurora-layer,
+  .nebula-layer,
+  .noise-overlay,
+  .hud-scan-line,
+  .hud-circle-points {
+    display: none;
+  }
+
+  .particles-container {
+    display: none;
+  }
+}

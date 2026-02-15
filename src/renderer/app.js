@@ -1,4 +1,4 @@
-// V204 VPN - Tauri Renderer Logic v4.1 (Ported from gldstvpn 2.4.6)
+// V204 VPN - Tauri Renderer Logic v4.1 (v2.6.0)
 const invoke = window.__TAURI__.invoke;
 const { appWindow } = window.__TAURI__.window;
 const { listen } = window.__TAURI__.event;
