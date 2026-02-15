@@ -6,7 +6,7 @@
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{TrayIconBuilder, TrayIconEvent},
-    Manager, State, AppHandle, Emitter
+    Manager, State, AppHandle
 };
 use std::sync::{Arc, Mutex};
 
@@ -91,7 +91,7 @@ fn main() {
                         std::process::exit(0);
                     }
                     "show" => {
-                        if let Some(window) = app.get_window("main") {
+                        if let Some(window) = app.get_webview_window("main") {
                              let _ = window.show();
                              let _ = window.set_focus();
                         }
@@ -101,7 +101,7 @@ fn main() {
                 .on_tray_icon_event(|tray, event| match event {
                     TrayIconEvent::Click { .. } => {
                        let app = tray.app_handle();
-                       if let Some(window) = app.get_window("main") {
+                       if let Some(window) = app.get_webview_window("main") {
                             let _ = window.show();
                             let _ = window.set_focus();
                        }

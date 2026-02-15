@@ -144,20 +144,28 @@ impl XrayManager {
                     if !*r { break; }
                 }
 
+                println!("[Stats Loop] Running query...");
                 let output = Command::new(&binary_path_clone)
-                    .args(&["api", "statsquery", "--server=127.0.0.1:10085"])
+                    .args(&["api", "statsquery", "--server=127.0.0.1:10085", ""])
                     .output();
 
                 match output {
                     Ok(out) => {
+                        println!("[Stats] Exit Code: {}", out.status);
+                        if !out.stderr.is_empty() {
+                            println!("[Stats] Stderr: {}", String::from_utf8_lossy(&out.stderr));
+                        }
+                        
                         if out.status.success() {
                             if let Ok(json_str) = String::from_utf8(out.stdout) {
+                                println!("[Stats] Raw JSON: {}", json_str); // DEBUG: Print everything
                                 let trimmed = json_str.trim();
                                 if !trimmed.is_empty() {
                                     match serde_json::from_str::<serde_json::Value>(trimmed) {
                                         Ok(json_val) => {
                                             // Extract up/down totals for usage tracking
                                             let (total_up, total_down) = extract_totals(&json_val);
+                                            println!("[Stats] Extracted - Up: {}, Down: {}", total_up, total_down);
                                             usage_store_clone.record_traffic(total_up, total_down);
                                             
                                             let _ = app_handle_clone.emit("xray-stats", json_val);

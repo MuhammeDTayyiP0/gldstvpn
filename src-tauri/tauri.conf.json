@@ -3,12 +3,12 @@
     "version": "3.0.0",
     "identifier": "com.v204.vpn",
     "build": {
-        "beforeDevCommand": "npm run dev",
-        "beforeBuildCommand": "npm run build",
-        "devUrl": "http://localhost:1420",
+        "beforeDevCommand": null,
+        "beforeBuildCommand": null,
         "frontendDist": "../src/renderer"
     },
     "app": {
+        "withGlobalTauri": true,
         "windows": [
             {
                 "label": "main",
