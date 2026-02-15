@@ -63,10 +63,12 @@
             "category": "Network",
             "windows": {
                 "nsis": {
-                    "oneClick": false,
-                    "allowToChangeInstallationDirectory": true,
-                    "createDesktopShortcuts": true,
-                    "createStartMenuShortcuts": true
+                    "installMode": "both",
+                    "languages": [
+                        "Turkish",
+                        "English"
+                    ],
+                    "displayLanguageSelector": true
                 }
             }
         },
