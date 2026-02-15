@@ -1,4 +1,6 @@
 use std::process::{Command, Stdio, Child};
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -109,13 +111,15 @@ impl XrayManager {
 
         println!("Starting Xray with command: {:?} run -config {:?}", binary_path, config_path);
 
-        let mut child = Command::new(&binary_path)
-            .args(&["run", "-config", config_path.to_str().unwrap()])
+        let mut cmd = Command::new(&binary_path);
+        cmd.args(&["run", "-config", config_path.to_str().unwrap()])
             .current_dir(resource_dir)
             .env("XRAY_LOCATION_ASSET", resource_dir)
             .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()
+            .stderr(Stdio::piped());
+        #[cfg(windows)]
+        cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
+        let mut child = cmd.spawn()
             .map_err(|e| format!("Failed to spawn xray: {}", e))?;
 
         // Monitor stdout
@@ -174,9 +178,11 @@ impl XrayManager {
                 }
 
                 println!("[Stats Loop] Running query...");
-                let output = Command::new(&binary_path_clone)
-                    .args(&["api", "statsquery", "--server=127.0.0.1:10085", ""])
-                    .output();
+                let mut stats_cmd = Command::new(&binary_path_clone);
+                stats_cmd.args(&["api", "statsquery", "--server=127.0.0.1:10085", ""]);
+                #[cfg(windows)]
+                stats_cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
+                let output = stats_cmd.output();
 
                 match output {
                     Ok(out) => {

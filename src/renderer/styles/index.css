@@ -2359,33 +2359,217 @@ input:checked+.slider:before {
   max-width: 240px;
 }
 
-/* === Performance Light Mode === */
-body.performance-light .aurora-layer,
-body.performance-light .nebula-layer,
-body.performance-light .noise-overlay,
-body.performance-light .decor-glow-1,
-body.performance-light .decor-glow-2,
-body.performance-light .decor-glow-3,
-body.performance-light .decor-glow-4,
-body.performance-light .decor-glow-5 {
-  opacity: 0 !important;
+/* === Performance Slider Styles === */
+.perf-slider-item {
+  flex-direction: column;
+  align-items: stretch !important;
+  gap: 12px;
+}
+
+.perf-slider-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.perf-level-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-neon);
+  text-align: center;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  transition: color 0.3s;
+}
+
+.perf-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-neon), var(--success));
+  outline: none;
+  cursor: pointer;
+  direction: rtl;
+}
+
+.perf-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--text-primary);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+
+.perf-slider::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 18px rgba(99, 102, 241, 0.9), 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+.perf-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--text-primary);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  border: none;
+}
+
+.perf-slider-ticks {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4px;
+  font-size: 10px;
+  color: var(--text-muted);
+  direction: rtl;
+}
+
+/* === Performance Level 1: Reduced (Hafif) === */
+body.perf-1 .aurora-layer {
+  animation-duration: 60s !important;
+  opacity: 0.4 !important;
+  filter: blur(100px) !important;
+}
+
+body.perf-1 .nebula-layer {
+  animation-duration: 40s !important;
+  opacity: 0.3 !important;
+}
+
+body.perf-1 .hud-ring,
+body.perf-1 .hud-scan-line,
+body.perf-1 .hud-circle-points {
+  opacity: 0.1 !important;
+}
+
+body.perf-1 .noise-overlay {
+  animation: none !important;
+}
+
+/* === Performance Level 2: Balanced (Dengeli) === */
+body.perf-2 .aurora-layer,
+body.perf-2 .nebula-layer {
   display: none !important;
 }
 
-body.performance-light .particles-container {
+body.perf-2 .noise-overlay {
   display: none !important;
 }
 
-body.performance-light .glass-panel,
-body.performance-light .titlebar,
-body.performance-light .profile-modal-content {
+body.perf-2 .hud-ring,
+body.perf-2 .hud-scan-line,
+body.perf-2 .hud-circle-points {
+  display: none !important;
+}
+
+body.perf-2 .decor-glow-1,
+body.perf-2 .decor-glow-2,
+body.perf-2 .decor-glow-3,
+body.perf-2 .decor-glow-4,
+body.perf-2 .decor-glow-5 {
+  animation: none !important;
+  opacity: 0.3 !important;
+}
+
+body.perf-2 .app-container::before,
+body.perf-2 .app-container::after {
+  display: none !important;
+}
+
+/* === Performance Level 3: Performance (Performans) === */
+body.perf-3 .aurora-layer,
+body.perf-3 .nebula-layer,
+body.perf-3 .noise-overlay,
+body.perf-3 .hud-ring,
+body.perf-3 .hud-scan-line,
+body.perf-3 .hud-circle-points {
+  display: none !important;
+}
+
+body.perf-3 .decor-glow-1,
+body.perf-3 .decor-glow-2,
+body.perf-3 .decor-glow-3,
+body.perf-3 .decor-glow-4,
+body.perf-3 .decor-glow-5 {
+  display: none !important;
+}
+
+body.perf-3 .particles-container {
+  display: none !important;
+}
+
+body.perf-3 .app-container::before,
+body.perf-3 .app-container::after {
+  display: none !important;
+}
+
+body.perf-3 .titlebar,
+body.perf-3 .profile-modal-content {
+  backdrop-filter: none !important;
+}
+
+body.perf-3 .globe-ring {
+  animation-duration: 30s !important;
+}
+
+/* === Performance Level 4: Ultra Light (Ultra Hafif) === */
+body.perf-4 .aurora-layer,
+body.perf-4 .nebula-layer,
+body.perf-4 .noise-overlay,
+body.perf-4 .hud-ring,
+body.perf-4 .hud-scan-line,
+body.perf-4 .hud-circle-points,
+body.perf-4 .decor-glow-1,
+body.perf-4 .decor-glow-2,
+body.perf-4 .decor-glow-3,
+body.perf-4 .decor-glow-4,
+body.perf-4 .decor-glow-5,
+body.perf-4 .particles-container {
+  display: none !important;
+}
+
+body.perf-4 .app-container::before,
+body.perf-4 .app-container::after {
+  display: none !important;
+}
+
+body.perf-4 .titlebar,
+body.perf-4 .profile-modal-content {
   backdrop-filter: none !important;
   background: rgba(11, 15, 28, 0.98) !important;
 }
 
-body.performance-light * {
+body.perf-4 * {
   box-shadow: none !important;
   text-shadow: none !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.15s !important;
+}
+
+body.perf-4 .globe-ring {
+  animation: none !important;
+  opacity: 0.2 !important;
+}
+
+body.perf-4 .pulse-ring {
+  animation: none !important;
+}
+
+body.perf-4 .connect-outer-ring,
+body.perf-4 .connect-outer-ring-2,
+body.perf-4 .radar-sweep {
+  animation: none !important;
+}
+
+body.perf-4 .titlebar::after {
+  animation: none !important;
 }
 
 /* GPU compositing hints for animated containers */

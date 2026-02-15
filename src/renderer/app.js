@@ -1,4 +1,4 @@
-// V204 VPN - Tauri Renderer Logic v5.0 (v3.0.0 - Tauri v2)
+// V204 VPN - Tauri Renderer Logic v5.1 (v3.1.0 - Tauri v2)
 const invoke = window.__TAURI__.core.invoke;
 const appWindow = window.__TAURI__.window.getCurrentWindow();
 const { listen } = window.__TAURI__.event;
@@ -32,6 +32,7 @@ class VPNApp {
     }
 
     initElements() {
+        this.titlebar = document.getElementById('titlebar');
         this.connectBtn = document.getElementById('connect-btn');
         this.connectBtnWrapper = document.getElementById('connect-btn-wrapper');
         this.statusText = document.getElementById('status-text');
@@ -71,6 +72,15 @@ class VPNApp {
     initEventListeners() {
         this.connectBtn.addEventListener('click', () => this.toggleConnection());
 
+        // Programmatic window dragging — reliable on all platforms including Linux/WebKitGTK
+        if (this.titlebar) {
+            this.titlebar.addEventListener('mousedown', (e) => {
+                // Don't drag if clicking on buttons or interactive elements
+                if (e.target.closest('.titlebar-controls') || e.target.closest('button')) return;
+                appWindow.startDragging();
+            });
+        }
+
         this.btnMinimize.addEventListener('click', () => {
             appWindow.minimize();
         });
@@ -106,14 +116,23 @@ class VPNApp {
         this.btnSettings = document.getElementById('btn-settings');
         this.settingsModal = document.getElementById('settings-modal');
         this.btnCloseSettings = document.getElementById('btn-close-settings');
-        this.toggleLightMode = document.getElementById('toggle-light-mode');
+        this.perfSlider = document.getElementById('perf-slider');
+        this.perfLevelLabel = document.getElementById('perf-level-label');
 
-        // Load saved setting
-        const savedLightMode = localStorage.getItem('performance-light-mode') === 'true';
-        if (savedLightMode) {
-            document.body.classList.add('performance-light');
-            if (this.toggleLightMode) this.toggleLightMode.checked = true;
+        // Performance level names
+        this.perfLevelNames = ['Tam Mod', 'Hafif', 'Dengeli', 'Performans', 'Ultra Hafif'];
+
+        // Migrate old setting if exists
+        const oldSetting = localStorage.getItem('performance-light-mode');
+        if (oldSetting === 'true') {
+            localStorage.setItem('perf-level', '3');
+            localStorage.removeItem('performance-light-mode');
         }
+
+        // Load saved level
+        const savedLevel = parseInt(localStorage.getItem('perf-level') || '0');
+        this.applyPerfLevel(savedLevel);
+        if (this.perfSlider) this.perfSlider.value = savedLevel;
 
         // Event Listeners
         if (this.btnSettings) {
@@ -134,17 +153,25 @@ class VPNApp {
             });
         }
 
-        if (this.toggleLightMode) {
-            this.toggleLightMode.addEventListener('change', (e) => {
-                const isLight = e.target.checked;
-                if (isLight) {
-                    document.body.classList.add('performance-light');
-                    localStorage.setItem('performance-light-mode', 'true');
-                } else {
-                    document.body.classList.remove('performance-light');
-                    localStorage.setItem('performance-light-mode', 'false');
-                }
+        if (this.perfSlider) {
+            this.perfSlider.addEventListener('input', (e) => {
+                const level = parseInt(e.target.value);
+                this.applyPerfLevel(level);
+                localStorage.setItem('perf-level', level.toString());
             });
+        }
+    }
+
+    applyPerfLevel(level) {
+        // Remove all perf classes
+        document.body.classList.remove('perf-1', 'perf-2', 'perf-3', 'perf-4', 'performance-light');
+        // Add the current level class (0 = no class = full mode)
+        if (level > 0) {
+            document.body.classList.add(`perf-${level}`);
+        }
+        // Update label
+        if (this.perfLevelLabel) {
+            this.perfLevelLabel.textContent = this.perfLevelNames[level] || 'Tam Mod';
         }
     }
 

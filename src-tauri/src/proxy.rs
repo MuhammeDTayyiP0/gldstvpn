@@ -1,4 +1,6 @@
 use std::process::Command;
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
 
 /// Cross-platform system proxy manager.
 /// Windows: uses registry (reg.exe)
@@ -87,9 +89,11 @@ impl ProxySettings {
     }
 
     fn run_reg_command(args: &[&str]) -> Result<(), String> {
-        let output = Command::new("reg")
-            .args(args)
-            .output()
+        let mut cmd = Command::new("reg");
+        cmd.args(args);
+        #[cfg(windows)]
+        cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
+        let output = cmd.output()
             .map_err(|e| format!("Failed to run reg command: {}", e))?;
 
         if !output.status.success() {
@@ -155,9 +159,11 @@ impl ProxySettings {
     }
 
     fn run_gsettings(args: &[&str]) -> Result<(), String> {
-        let output = Command::new("gsettings")
-            .args(args)
-            .output()
+        let mut cmd = Command::new("gsettings");
+        cmd.args(args);
+        #[cfg(windows)]
+        cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
+        let output = cmd.output()
             .map_err(|e| format!("gsettings not found: {}", e))?;
 
         if !output.status.success() {

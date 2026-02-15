@@ -69,15 +69,18 @@
 
       <div class="usage-stats-section">
         <h3>Performans</h3>
-        <div class="setting-item">
+        <div class="setting-item perf-slider-item">
           <div class="setting-info">
-            <span class="setting-title">Hafif Mod</span>
-            <span class="setting-desc">Düşük sistemler için animasyonları azaltır ve performansı artırır.</span>
+            <span class="setting-title">Görsel Kalite</span>
+            <span class="setting-desc">Sola kaydırarak animasyonları kademeli olarak azaltın.</span>
           </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="toggle-light-mode">
-            <span class="slider"></span>
-          </label>
+          <div class="perf-slider-wrap">
+            <span class="perf-level-label" id="perf-level-label">Tam Mod</span>
+            <input type="range" min="0" max="4" step="1" value="0" class="perf-slider" id="perf-slider">
+            <div class="perf-slider-ticks">
+              <span>✦</span><span>◆</span><span>●</span><span>○</span><span>·</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
