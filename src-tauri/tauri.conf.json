@@ -60,7 +60,15 @@
                 "depends": [],
                 "desktopTemplate": null
             },
-            "category": "Network"
+            "category": "Network",
+            "windows": {
+                "nsis": {
+                    "oneClick": false,
+                    "allowToChangeInstallationDirectory": true,
+                    "createDesktopShortcuts": true,
+                    "createStartMenuShortcuts": true
+                }
+            }
         },
         "windows": [
             {
@@ -74,12 +82,6 @@
                 "resizable": false
             }
         ],
-        "nsis": {
-            "oneClick": false,
-            "allowToChangeInstallationDirectory": true,
-            "createDesktopShortcuts": true,
-            "createStartMenuShortcuts": true
-        },
         "systemTray": {
             "iconPath": "icons/icon.png",
             "iconAsTemplate": true
