@@ -2,7 +2,7 @@ use std::process::{Command, Stdio, Child};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, Emitter};
 use std::thread;
 use crate::config;
 use crate::usage::UsageStore;
@@ -27,12 +27,15 @@ impl XrayManager {
     fn get_binary_path(&self) -> Result<PathBuf, String> {
         let binary_name = if cfg!(windows) { "xray.exe" } else { "xray" };
         
-        if let Some(resource_path) = self.app_handle.path_resolver().resolve_resource(format!("resources/xray/{}", binary_name)) {
-             if resource_path.exists() {
-                return Ok(resource_path);
-            }
+        let resource_dir = self.app_handle.path().resource_dir()
+            .map_err(|e| format!("Failed to get resource dir: {}", e))?;
+
+        let resource_path = resource_dir.join("resources").join("xray").join(binary_name);
+        if resource_path.exists() {
+            return Ok(resource_path);
         }
 
+        // Fallback or dev paths
         let paths = [
             PathBuf::from("resources").join("xray").join(binary_name),
             PathBuf::from("..").join("resources").join("xray").join(binary_name),
@@ -45,11 +48,11 @@ impl XrayManager {
             }
         }
 
-        Err("Xray binary not found. Please ensure xray.exe is in resources/xray/".to_string())
+        Err(format!("Xray binary not found at {:?} or fallback paths.", resource_path))
     }
 
     fn get_config_path(&self) -> PathBuf {
-        let config_dir = self.app_handle.path_resolver()
+        let config_dir = self.app_handle.path()
             .app_data_dir()
             .unwrap_or(PathBuf::from("."));
             
@@ -157,7 +160,7 @@ impl XrayManager {
                                             let (total_up, total_down) = extract_totals(&json_val);
                                             usage_store_clone.record_traffic(total_up, total_down);
                                             
-                                            let _ = app_handle_clone.emit_all("xray-stats", json_val);
+                                            let _ = app_handle_clone.emit("xray-stats", json_val);
                                         }
                                         Err(e) => {
                                             println!("[Stats] JSON parse error: {}", e);

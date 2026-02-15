@@ -4,8 +4,9 @@
 )]
 
 use tauri::{
-    CustomMenuItem, SystemTray, SystemTrayMenu, SystemTrayMenuItem, SystemTrayEvent, 
-    Manager, State, AppHandle
+    menu::{Menu, MenuItem},
+    tray::{TrayIconBuilder, TrayIconEvent},
+    Manager, State, AppHandle, Emitter
 };
 use std::sync::{Arc, Mutex};
 
@@ -66,20 +67,51 @@ fn get_usage(state: State<AppState>) -> Result<usage::UsageStats, String> {
 }
 
 fn main() {
-    let quit = CustomMenuItem::new("quit".to_string(), "Çıkış");
-    let show = CustomMenuItem::new("show".to_string(), "Göster");
-    let tray_menu = SystemTrayMenu::new()
-        .add_item(show)
-        .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(quit);
-  
-    let system_tray = SystemTray::new().with_menu(tray_menu);
-
     tauri::Builder::default()
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_process::init())
         .setup(|app| {
-            let data_dir = app.path_resolver()
-                .app_data_dir()
-                .unwrap_or_else(|| std::path::PathBuf::from("."));
+            let quit_i = MenuItem::with_id(app, "quit", "Çıkış", true, None::<&str>).unwrap();
+            let show_i = MenuItem::with_id(app, "show", "Göster", true, None::<&str>).unwrap();
+            let menu = Menu::with_items(app, &[&show_i, &quit_i]).unwrap();
+
+            let _tray = TrayIconBuilder::with_id("main")
+                .icon(app.default_window_icon().unwrap().clone())
+                .menu(&menu)
+                .on_menu_event(|app, event| match event.id.as_ref() {
+                    "quit" => {
+                        let _ = ProxySettings::disable();
+                        let state: State<AppState> = app.state();
+                        let manager = state.xray_manager.lock().unwrap();
+                        if let Some(m) = manager.as_ref() {
+                            let _ = m.stop();
+                        }
+                        std::process::exit(0);
+                    }
+                    "show" => {
+                        if let Some(window) = app.get_window("main") {
+                             let _ = window.show();
+                             let _ = window.set_focus();
+                        }
+                    }
+                    _ => {}
+                })
+                .on_tray_icon_event(|tray, event| match event {
+                    TrayIconEvent::Click { .. } => {
+                       let app = tray.app_handle();
+                       if let Some(window) = app.get_window("main") {
+                            let _ = window.show();
+                            let _ = window.set_focus();
+                       }
+                    }
+                    _ => {}
+                })
+                .build(app)?;
+
+            let path_resolver = app.path();
+            let data_dir = path_resolver.app_data_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
             
             if !data_dir.exists() {
                 let _ = std::fs::create_dir_all(&data_dir);
@@ -91,35 +123,6 @@ fn main() {
                 usage_store,
             });
             Ok(())
-        })
-        .system_tray(system_tray)
-        .on_system_tray_event(|app, event| match event {
-            SystemTrayEvent::LeftClick { .. } => {
-                let window = app.get_window("main").unwrap();
-                window.show().unwrap();
-                window.set_focus().unwrap();
-            }
-            SystemTrayEvent::MenuItemClick { id, .. } => {
-                match id.as_str() {
-                    "quit" => {
-                        // Disable proxy and stop VPN before quitting
-                        let _ = ProxySettings::disable();
-                        let state: State<AppState> = app.state();
-                        let manager = state.xray_manager.lock().unwrap();
-                        if let Some(m) = manager.as_ref() {
-                            let _ = m.stop();
-                        }
-                        std::process::exit(0);
-                    }
-                    "show" => {
-                        let window = app.get_window("main").unwrap();
-                        window.show().unwrap();
-                        window.set_focus().unwrap();
-                    }
-                    _ => {}
-                }
-            }
-            _ => {}
         })
         .invoke_handler(tauri::generate_handler![start_vpn, stop_vpn, get_usage])
         .run(tauri::generate_context!())

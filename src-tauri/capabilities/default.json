@@ -1,0 +1,45 @@
+{
+    "identifier": "default",
+    "description": "Default permissions for V204 VPN",
+    "local": true,
+    "windows": [
+        "main"
+    ],
+    "permissions": [
+        "core:app:allow-show",
+        "core:app:allow-hide",
+        "core:window:allow-minimize",
+        "core:window:allow-maximize",
+        "core:window:allow-close",
+        "core:window:allow-show",
+        "core:window:allow-hide",
+        "core:window:allow-set-focus",
+        "core:path:default",
+        "shell:allow-open",
+        "shell:allow-execute",
+        "fs:allow-read-text-file",
+        "fs:allow-write-text-file",
+        "fs:allow-exists",
+        "fs:allow-read-dir",
+        "process:allow-exit",
+        "process:allow-restart",
+        {
+            "identifier": "fs:scope",
+            "allow": [
+                "$APP/*",
+                "$APPDATA/*",
+                "$RESOURCE/*"
+            ]
+        },
+        {
+            "identifier": "shell:execute",
+            "allow": [
+                {
+                    "name": "binaries/xray",
+                    "cmd": "resources/xray/xray",
+                    "args": true
+                }
+            ]
+        }
+    ]
+}

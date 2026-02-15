@@ -1,6 +1,6 @@
-// V204 VPN - Tauri Renderer Logic v4.1 (v3.0.0)
-const invoke = window.__TAURI__.invoke;
-const { appWindow } = window.__TAURI__.window;
+// V204 VPN - Tauri Renderer Logic v5.0 (v3.0.0 - Tauri v2)
+const invoke = window.__TAURI__.core.invoke;
+const appWindow = window.__TAURI__.window.getCurrentWindow();
 const { listen } = window.__TAURI__.event;
 
 class VPNApp {
