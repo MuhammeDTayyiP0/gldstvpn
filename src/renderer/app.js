@@ -1,4 +1,4 @@
-// V204 VPN - Tauri Renderer Logic v4.1 (v2.6.0)
+// V204 VPN - Tauri Renderer Logic v4.1 (v3.0.0)
 const invoke = window.__TAURI__.invoke;
 const { appWindow } = window.__TAURI__.window;
 const { listen } = window.__TAURI__.event;
@@ -14,6 +14,7 @@ class VPNApp {
 
         this.initPlatform();
         this.initElements();
+        this.initSettingsInfo();
         this.initEventListeners();
         this.initTauriListeners();
     }
@@ -99,6 +100,52 @@ class VPNApp {
 
     closeProfileModal() {
         this.profileModal.classList.remove('active');
+    }
+
+    initSettingsInfo() {
+        this.btnSettings = document.getElementById('btn-settings');
+        this.settingsModal = document.getElementById('settings-modal');
+        this.btnCloseSettings = document.getElementById('btn-close-settings');
+        this.toggleLightMode = document.getElementById('toggle-light-mode');
+
+        // Load saved setting
+        const savedLightMode = localStorage.getItem('performance-light-mode') === 'true';
+        if (savedLightMode) {
+            document.body.classList.add('performance-light');
+            if (this.toggleLightMode) this.toggleLightMode.checked = true;
+        }
+
+        // Event Listeners
+        if (this.btnSettings) {
+            this.btnSettings.addEventListener('click', () => {
+                this.settingsModal.classList.add('active');
+            });
+        }
+
+        if (this.btnCloseSettings) {
+            this.btnCloseSettings.addEventListener('click', () => {
+                this.settingsModal.classList.remove('active');
+            });
+        }
+
+        if (this.settingsModal) {
+            this.settingsModal.addEventListener('click', (e) => {
+                if (e.target === this.settingsModal) this.settingsModal.classList.remove('active');
+            });
+        }
+
+        if (this.toggleLightMode) {
+            this.toggleLightMode.addEventListener('change', (e) => {
+                const isLight = e.target.checked;
+                if (isLight) {
+                    document.body.classList.add('performance-light');
+                    localStorage.setItem('performance-light-mode', 'true');
+                } else {
+                    document.body.classList.remove('performance-light');
+                    localStorage.setItem('performance-light-mode', 'false');
+                }
+            });
+        }
     }
 
     async updateUsageStats() {

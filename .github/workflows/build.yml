@@ -45,9 +45,11 @@ jobs:
           Expand-Archive -Path "xray.zip" -DestinationPath "resources/xray" -Force
           Remove-Item "xray.zip"
 
-      - name: Build Electron App
-        run: |
-          npx electron-builder --publish never
+      - name: Install Rust Stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Tauri App
+        run: npm run build
 
       - name: Release & Upload Artifacts
         uses: softprops/action-gh-release@v1
@@ -58,7 +60,7 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            dist/*.exe
-            dist/*.deb
-            dist/*.AppImage
+            src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/release/bundle/deb/*.deb
+            src-tauri/target/release/bundle/appimage/*.AppImage
           token: ${{ secrets.GITHUB_TOKEN }}
