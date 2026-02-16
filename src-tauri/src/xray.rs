@@ -109,6 +109,16 @@ impl XrayManager {
              return Err(format!("Failed to generate config: {}", e));
         }
 
+        // Cleanup previous instances to avoid port 10085 conflicts
+        #[cfg(windows)]
+        {
+            let _ = Command::new("taskkill")
+                .args(&["/F", "/IM", "xray.exe"])
+                .creation_flags(0x08000000)
+                .output();
+            thread::sleep(Duration::from_millis(500));
+        }
+
         println!("Starting Xray with command: {:?} run -config {:?}", binary_path, config_path);
 
         let mut cmd = Command::new(&binary_path);
@@ -193,14 +203,14 @@ impl XrayManager {
                         
                         if out.status.success() {
                             if let Ok(json_str) = String::from_utf8(out.stdout) {
-                                println!("[Stats] Raw JSON: {}", json_str); // DEBUG: Print everything
+                                // println!("[Stats] Raw JSON: {}", json_str); // DEBUG: Print everything
                                 let trimmed = json_str.trim();
                                 if !trimmed.is_empty() {
                                     match serde_json::from_str::<serde_json::Value>(trimmed) {
                                         Ok(json_val) => {
                                             // Extract up/down totals for usage tracking
                                             let (total_up, total_down) = extract_totals(&json_val);
-                                            println!("[Stats] Extracted - Up: {}, Down: {}", total_up, total_down);
+                                            // println!("[Stats] Extracted - Up: {}, Down: {}", total_up, total_down);
                                             usage_store_clone.record_traffic(total_up, total_down);
                                             
                                             let _ = app_handle_clone.emit("xray-stats", json_val);
@@ -250,27 +260,35 @@ fn extract_totals(json: &serde_json::Value) -> (u64, u64) {
     if let Some(stats) = json.get("stat").and_then(|s| s.as_array()) {
         for item in stats {
             let name = item.get("name").and_then(|n| n.as_str()).unwrap_or("");
+            let val_v = item.get("value");
             
-            // Only count outbound>>>proxy to avoid counting each byte 2-3x
-            if !name.starts_with("outbound>>>proxy>>>") {
+            // Filter
+            if !name.contains("outbound>>>proxy") {
                 continue;
             }
+
+            // println!("[Stats Debug] Processing: {} | {:?}", name, val_v);
+
+            let value: u64 = if let Some(v) = val_v {
+                if let Some(n) = v.as_u64() {
+                    n
+                } else if let Some(s) = v.as_str() {
+                    s.parse().unwrap_or(0)
+                } else {
+                    0
+                }
+            } else {
+                0
+            };
             
-            let value: u64 = item.get("value")
-                .and_then(|v| {
-                    v.as_str().and_then(|s| s.parse().ok())
-                        .or_else(|| v.as_u64())
-                })
-                .unwrap_or(0);
-            
-            if name.contains("uplink") {
+            if name.ends_with(">>>uplink") {
                 up += value;
             }
-            if name.contains("downlink") {
+            if name.ends_with(">>>downlink") {
                 down += value;
             }
         }
     }
-    
+    // println!("[Stats Debug] Total Up: {}, Total Down: {}", up, down);
     (up, down)
 }

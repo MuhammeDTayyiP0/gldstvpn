@@ -1,6 +1,6 @@
 {
   "name": "v204",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "V204 - Güvenli VLESS VPN İstemcisi",
   "main": "src/main/main.js",
   "scripts": {

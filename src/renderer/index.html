@@ -9,279 +9,204 @@
   <title>V204 VPN</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles/index.css">
 </head>
 
 <body>
-  <!-- Screen Flash Overlay -->
-  <div class="screen-flash" id="screen-flash"></div>
-
   <!-- Title Bar -->
   <div class="titlebar" id="titlebar" data-tauri-drag-region>
     <div class="titlebar-title" data-tauri-drag-region>
-      <img src="assets/logo.png" class="titlebar-icon-img" alt="Logo">
+      <div class="titlebar-icon-wrapper">
+        <img src="../assets/logo.png" alt="V204 Logo" class="app-icon-img" style="width: 20px; height: 20px;">
+      </div>
       <span data-tauri-drag-region>V204 VPN</span>
     </div>
     <div class="titlebar-controls">
-      <button class="titlebar-btn id-minimize" id="btn-minimize" title="Küçült">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" />
+      <button class="titlebar-btn" id="btn-minimize">
+        <svg width="10" height="1" viewBox="0 0 10 1" fill="none">
+          <rect width="10" height="1" rx="0.5" fill="currentColor" />
         </svg>
       </button>
-      <button class="titlebar-btn id-settings" id="btn-settings" title="Ayarlar">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <button class="titlebar-btn" id="btn-settings">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path
+            d="M6 7.5C6.82843 7.5 7.5 6.82843 7.5 6C7.5 5.17157 6.82843 4.5 6 4.5C5.17157 4.5 4.5 5.17157 4.5 6C4.5 6.82843 5.17157 7.5 6 7.5Z"
+            stroke="currentColor" stroke-width="1.2" />
+          <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2" />
         </svg>
       </button>
-      <button class="titlebar-btn id-profile" id="btn-profile" title="Profil & Kullanım">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      <button class="titlebar-btn" id="btn-profile">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <circle cx="6" cy="3.5" r="2" stroke="currentColor" stroke-width="1.2" />
+          <path d="M2.5 10.5C2.5 8.567 4.067 7 6 7C7.933 7 9.5 8.567 9.5 10.5" stroke="currentColor" stroke-width="1.2"
+            stroke-linecap="round" />
         </svg>
       </button>
-      <button class="titlebar-btn id-close" id="btn-close" title="Kapat">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+      <button class="titlebar-btn close" id="btn-close">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <path d="M1 1L9 9M9 1L1 9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
         </svg>
       </button>
     </div>
   </div>
 
-  <!-- Settings Modal -->
-  <div class="profile-modal-overlay" id="settings-modal">
-    <div class="profile-modal-content">
-      <div class="profile-header">
-        <div>
-          <h2>Ayarlar</h2>
-          <span class="user-role">Sistem Tercihleri</span>
+  <!-- App Content -->
+  <div class="app-container">
+
+    <!-- Status Indicator -->
+    <div class="status-pill" id="status-indicator">
+      <div class="status-dot-wrapper">
+        <div class="status-dot"></div>
+      </div>
+      <span class="status-text" id="status-text">DISCONNECTED</span>
+    </div>
+
+    <!-- Main Visual (Button) -->
+    <div class="main-action-area">
+      <div class="connect-button-wrapper" id="connect-btn-wrapper">
+        <button class="connect-btn" id="connect-btn">
+          <div class="power-icon-wrapper">
+            <svg class="power-icon" viewBox="0 0 24 24" fill="none">
+              <path d="M12 3V12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+              <path
+                d="M18.36 5.64C19.6184 6.8988 20.4753 8.50246 20.8223 10.2482C21.1693 11.994 20.9909 13.8034 20.3096 15.4478C19.6284 17.0921 18.4748 18.4976 16.9948 19.4864C15.5149 20.4752 13.7749 21.0029 12 21.0029C10.2251 21.0029 8.48508 20.4752 7.00515 19.4864C5.52522 18.4976 4.37164 17.0921 3.69036 15.4478C3.00909 13.8034 2.83068 11.994 3.17769 10.2482C3.5247 8.50246 4.38163 6.8988 5.64 5.64"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+            </svg>
+          </div>
+        </button>
+
+        <!-- Subtle spinner ring (visible when connecting) -->
+        <div class="spinner-ring"></div>
+      </div>
+
+      <div class="action-label" id="connect-label">Tap to Connect</div>
+
+      <div class="timer-display" id="connection-time" style="opacity: 0;">
+        00:00:00
+      </div>
+
+      <!-- Info Message (Errors) -->
+      <div class="info-message-area" id="error-container" style="opacity: 0;">
+        <span id="error-text">Connection failed</span>
+      </div>
+    </div>
+
+    <!-- Stats Bar (Visible when connected) -->
+    <div class="stats-bar" id="stats-grid">
+      <div class="stat-item">
+        <div class="stat-label">DOWNLOAD</div>
+        <div class="stat-value-group">
+          <svg viewBox="0 0 12 12" fill="none" class="stat-arrow down">
+            <path d="M6 9V3M6 9L3 6M6 9L9 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+          <span class="stat-value" id="download-speed">0.00 KB/s</span>
         </div>
-        <button class="icon-btn close-btn" id="btn-close-settings">
-          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
+      </div>
+
+      <div class="stat-divider"></div>
+
+      <div class="stat-item">
+        <div class="stat-label">UPLOAD</div>
+        <div class="stat-value-group">
+          <svg viewBox="0 0 12 12" fill="none" class="stat-arrow up">
+            <path d="M6 3V9M6 3L3 6M6 3L9 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+          <span class="stat-value" id="upload-speed">0.00 KB/s</span>
+        </div>
+      </div>
+
+      <div class="stat-divider"></div>
+
+      <div class="stat-item">
+        <div class="stat-label">DATA</div>
+        <div class="stat-value-group">
+          <span class="stat-value text-muted" id="total-usage">0.00 MB</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Signature -->
+  <div class="app-signature">Made by MTE</div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settings-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Preferences</h2>
+        <button class="modal-close" id="btn-close-settings">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
         </button>
       </div>
-
-      <div class="usage-stats-section">
-        <h3>Performans</h3>
-        <div class="setting-item perf-slider-item">
-          <div class="setting-info">
-            <span class="setting-title">Görsel Kalite</span>
-            <span class="setting-desc">Sola kaydırarak animasyonları kademeli olarak azaltın.</span>
+      <div class="modal-body">
+        <div class="setting-group">
+          <div class="setting-label">
+            <span>Performance Mode</span>
+            <small>Adjust visual fidelity for battery life</small>
           </div>
-          <div class="perf-slider-wrap">
-            <span class="perf-level-label" id="perf-level-label">Tam Mod</span>
-            <input type="range" min="0" max="4" step="1" value="0" class="perf-slider" id="perf-slider">
-            <div class="perf-slider-ticks">
-              <span>✦</span><span>◆</span><span>●</span><span>○</span><span>·</span>
+          <div class="slider-container">
+            <input type="range" min="0" max="4" step="1" value="0" id="perf-slider">
+            <div class="slider-labels">
+              <span id="perf-level-label">Standard</span>
             </div>
           </div>
         </div>
+        <div class="app-version">v3.1.0</div>
       </div>
     </div>
   </div>
 
-  <!-- Main Content -->
-  <div class="app-container">
-    <!-- Particles Container -->
-    <div class="particles-container" id="particles-container"></div>
-
-    <!-- Connection Visual -->
-    <div class="connection-visual">
-      <div class="globe-container" id="globe-container">
-        <div class="globe-ring ring-1"></div>
-        <div class="globe-ring ring-2"></div>
-        <div class="globe-ring ring-3"></div>
-
-        <!-- Holographic HUD Elements -->
-        <div class="hud-ring hud-ring-1"></div>
-        <div class="hud-ring hud-ring-2"></div>
-        <div class="hud-scan-line"></div>
-        <div class="hud-circle-points"></div>
-
-        <div class="globe-core" id="globe-core">
-          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="1.5" opacity="0.3" />
-            <ellipse cx="32" cy="32" rx="16" ry="28" stroke="currentColor" stroke-width="1.5" opacity="0.3" />
-            <ellipse cx="32" cy="32" rx="28" ry="16" stroke="currentColor" stroke-width="1.5" opacity="0.3"
-              transform="rotate(0 32 32)" />
-            <path d="M4 32H60" stroke="currentColor" stroke-width="1" opacity="0.2" />
-            <path d="M32 4V60" stroke="currentColor" stroke-width="1" opacity="0.2" />
+  <!-- Profile Modal -->
+  <div class="modal-overlay" id="profile-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Account</h2>
+        <button class="modal-close" id="btn-close-profile">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
-        </div>
-        <div class="pulse-ring" id="pulse-ring"></div>
-      </div>
-
-      <!-- Status Text -->
-      <div class="status-section">
-        <div class="status-indicator" id="status-indicator">
-          <div class="status-dot" id="status-dot"></div>
-          <span class="status-text" id="status-text">Bağlantı Kesildi</span>
-        </div>
-        <div class="connection-time" id="connection-time" style="display: none;">
-          <svg viewBox="0 0 16 16" fill="none" class="time-icon">
-            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5" />
-            <path d="M8 5V8L10 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-          </svg>
-          <span id="time-display">00:00:00</span>
-        </div>
-
-        <!-- Speed & Data Stats -->
-        <div class="stats-grid" id="stats-grid" style="display: none;">
-          <div class="stat-box">
-            <div class="stat-header">
-              <svg viewBox="0 0 24 24" fill="none" class="stat-icon-down">
-                <path d="M12 5V19M12 19L5 12M12 19L19 12" stroke="currentColor" stroke-width="2.5"
-                  stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-              <span>Download</span>
-            </div>
-            <div class="stat-value" id="download-speed">0.00 KB/s</div>
-          </div>
-
-          <div class="stat-box">
-            <div class="stat-header">
-              <svg viewBox="0 0 24 24" fill="none" class="stat-icon-up">
-                <path d="M12 19V5M12 5L5 12M12 5L19 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                  stroke-linejoin="round" />
-              </svg>
-              <span>Upload</span>
-            </div>
-            <div class="stat-value" id="upload-speed">0.00 KB/s</div>
-          </div>
-
-          <div class="stat-box total-box">
-            <div class="stat-header">
-              <svg viewBox="0 0 24 24" fill="none" class="stat-icon-total">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
-                <path d="M12 7V12L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-              </svg>
-              <span>Toplam Veri</span>
-            </div>
-            <div class="stat-value" id="total-usage">0.00 MB</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Connect Button -->
-    <div class="connect-section">
-      <div class="connect-btn-wrapper" id="connect-btn-wrapper">
-        <div class="ripple-container" id="ripple-container"></div>
-        <div class="shockwave" id="shockwave"></div>
-        <div class="success-burst" id="success-burst"></div>
-        <div class="disconnect-burst" id="disconnect-burst"></div>
-        <button class="connect-btn" id="connect-btn">
-          <div class="connect-btn-content">
-            <svg class="power-icon" viewBox="0 0 32 32" fill="none" id="power-icon">
-              <path d="M16 4V16" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
-              <path d="M8.93 8.93A10 10 0 1 0 23.07 8.93" stroke="currentColor" stroke-width="3"
-                stroke-linecap="round" />
-            </svg>
-          </div>
         </button>
-        <div class="connect-outer-ring"></div>
-        <div class="connect-outer-ring-2"></div>
-        <div class="connect-spinner-ring" id="spinner-ring"></div>
-        <div class="radar-sweep" id="radar-sweep"></div>
       </div>
-      <span class="connect-label" id="connect-label">Bağlanmak için dokunun</span>
-    </div>
-
-    <!-- Aurora / Nebula Background Layers -->
-    <div class="aurora-layer aurora-1"></div>
-    <div class="aurora-layer aurora-2"></div>
-    <div class="aurora-layer aurora-3"></div>
-    <div class="nebula-layer nebula-1"></div>
-    <div class="nebula-layer nebula-2"></div>
-    <div class="noise-overlay"></div>
-
-    <!-- Decorative Background Elements -->
-    <div class="decor-glow-1"></div>
-    <div class="decor-glow-2"></div>
-    <div class="decor-glow-3"></div>
-    <div class="decor-glow-4"></div>
-    <div class="decor-glow-5"></div>
-
-    <!-- Error Message -->
-    <div class="error-container" id="error-container" style="display: none;">
-      <div class="error-message">
-        <svg viewBox="0 0 20 20" fill="none" class="error-icon">
-          <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5" />
-          <path d="M10 6V11" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-          <circle cx="10" cy="14" r="1" fill="currentColor" />
-        </svg>
-        <span id="error-text">Hata oluştu</span>
-      </div>
-    </div>
-
-    <!-- Usage Stats Modal -->
-    <div class="profile-modal-overlay" id="profile-modal">
-      <div class="profile-modal-content">
-        <div class="profile-header">
-          <div>
-            <h2>Hesabım</h2>
-            <span class="user-role">Premium Üye</span>
-          </div>
-          <button class="icon-btn close-btn" id="btn-close-profile">
-            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-
-        <div class="user-profile-summary">
-          <div class="avatar-circle">M</div>
-          <div class="user-details-box">
-            <span class="username">MTE Kullanıcısı</span>
-            <span class="user-id">ID: 8842-9912</span>
-            <div class="user-status-badge">Aktif</div>
+      <div class="modal-body">
+        <div class="profile-summary">
+          <div class="profile-avatar">M</div>
+          <div class="profile-info">
+            <div class="profile-name">MTE User</div>
+            <div class="profile-plan">Premium Plan</div>
           </div>
         </div>
 
-        <div class="usage-stats-section">
-          <h3>Kullanım İstatistikleri</h3>
-          <div class="usage-grid-layout">
-            <div class="usage-card-item">
-              <span class="time-label">Bugün</span>
-              <span class="data-value" id="usage-day">--</span>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: 15%"></div>
-              </div>
-            </div>
-            <div class="usage-card-item">
-              <span class="time-label">Bu Hafta</span>
-              <span class="data-value" id="usage-week">--</span>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: 45%"></div>
-              </div>
-            </div>
-            <div class="usage-card-item">
-              <span class="time-label">Bu Ay</span>
-              <span class="data-value" id="usage-month">--</span>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: 70%"></div>
-              </div>
-            </div>
-            <div class="usage-card-item highlight-card">
-              <span class="time-label">Tüm Zamanlar</span>
-              <span class="data-value" id="usage-all">--</span>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: 100%"></div>
-              </div>
-            </div>
+        <div class="usage-stats">
+          <h3>Data Usage</h3>
+          <div class="usage-row">
+            <span>Today</span>
+            <span id="usage-day">--</span>
+          </div>
+          <div class="usage-row">
+            <span>This Week</span>
+            <span id="usage-week">--</span>
+          </div>
+          <div class="usage-row">
+            <span>This Month</span>
+            <span id="usage-month">--</span>
+          </div>
+          <div class="usage-row total">
+            <span>Total Lifetime</span>
+            <span id="usage-all">--</span>
           </div>
         </div>
       </div>
     </div>
-
-    <div class="footer-credit">made by MTE.</div>
   </div>
 
   <script src="app.js"></script>

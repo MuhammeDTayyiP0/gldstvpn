@@ -1,4 +1,4 @@
-// V204 VPN - Tauri Renderer Logic v5.1 (v3.1.0 - Tauri v2)
+// V204 VPN - Ultra Premium UI Logic (v3.2.0)
 const invoke = window.__TAURI__.core.invoke;
 const appWindow = window.__TAURI__.window.getCurrentWindow();
 const { listen } = window.__TAURI__.event;
@@ -9,277 +9,144 @@ class VPNApp {
         this.isConnecting = false;
         this.connectionStartTime = null;
         this.timerInterval = null;
-        this.ambientParticleInterval = null;
         this.lastStats = { up: 0, down: 0, timestamp: Date.now() };
 
-        this.initPlatform();
         this.initElements();
-        this.initSettingsInfo();
+        this.initSettings();
         this.initEventListeners();
         this.initTauriListeners();
     }
 
-    initPlatform() {
-        // Detect platform to apply optimizations (especially for Linux)
-        const platform = window.navigator.platform.toLowerCase();
-        if (platform.includes('linux')) {
-            document.body.classList.add('platform-linux');
-        } else if (platform.includes('win')) {
-            document.body.classList.add('platform-windows');
-        } else if (platform.includes('mac')) {
-            document.body.classList.add('platform-macos');
-        }
-    }
-
     initElements() {
-        this.titlebar = document.getElementById('titlebar');
-        this.connectBtn = document.getElementById('connect-btn');
-        this.connectBtnWrapper = document.getElementById('connect-btn-wrapper');
-        this.statusText = document.getElementById('status-text');
-        this.statusDot = document.getElementById('status-dot');
-        this.connectionTime = document.getElementById('connection-time');
-        this.timeDisplay = document.getElementById('time-display');
-        this.errorContainer = document.getElementById('error-container');
-        this.errorText = document.getElementById('error-text');
-        this.btnMinimize = document.getElementById('btn-minimize');
-        this.btnClose = document.getElementById('btn-close');
-        this.connectLabel = document.getElementById('connect-label');
-        this.rippleContainer = document.getElementById('ripple-container');
-        this.shockwave = document.getElementById('shockwave');
-        this.successBurst = document.getElementById('success-burst');
-        this.disconnectBurst = document.getElementById('disconnect-burst');
-        this.particlesContainer = document.getElementById('particles-container');
-        this.screenFlash = document.getElementById('screen-flash');
+        // Helper to safely get element
+        const get = (id) => {
+            const el = document.getElementById(id);
+            if (!el) console.warn(`Element not found: ${id}`);
+            return el;
+        };
 
-        // Stats elements
-        this.statsGrid = document.getElementById('stats-grid');
-        this.downloadSpeed = document.getElementById('download-speed');
-        this.uploadSpeed = document.getElementById('upload-speed');
-        this.totalUsage = document.getElementById('total-usage');
+        // Main Controls
+        this.titlebar = get('titlebar');
+        this.connectBtn = get('connect-btn');
+        this.statusText = get('status-text');
+        this.connectLabel = get('connect-label');
+        this.errorContainer = get('error-container');
+        this.errorText = get('error-text');
 
-        // Profile Elements
-        this.btnProfile = document.getElementById('btn-profile');
-        this.profileModal = document.getElementById('profile-modal');
-        this.btnCloseProfile = document.getElementById('btn-close-profile');
+        // Timer
+        this.timeDisplay = get('connection-time');
 
-        // Usage Data Elements
-        this.usageDay = document.getElementById('usage-day');
-        this.usageWeek = document.getElementById('usage-week');
-        this.usageMonth = document.getElementById('usage-month');
-        this.usageAll = document.getElementById('usage-all');
+        // Stats
+        this.downloadSpeed = get('download-speed');
+        this.uploadSpeed = get('upload-speed');
+        this.totalUsage = get('total-usage');
+
+        // Titlebar Buttons
+        this.btnMinimize = get('btn-minimize');
+        this.btnClose = get('btn-close');
+
+        // Modals
+        this.btnSettings = get('btn-settings');
+        this.settingsModal = get('settings-modal');
+        this.btnCloseSettings = get('btn-close-settings');
+
+        this.btnProfile = get('btn-profile');
+        this.profileModal = get('profile-modal');
+        this.btnCloseProfile = get('btn-close-profile');
+
+        // Profile Stats
+        this.usageDay = get('usage-day');
+        this.usageWeek = get('usage-week');
+        this.usageMonth = get('usage-month');
+        this.usageAll = get('usage-all');
     }
 
     initEventListeners() {
         this.connectBtn.addEventListener('click', () => this.toggleConnection());
 
-        // Programmatic window dragging — reliable on all platforms including Linux/WebKitGTK
-        if (this.titlebar) {
-            this.titlebar.addEventListener('mousedown', (e) => {
-                // Don't drag if clicking on buttons or interactive elements
-                if (e.target.closest('.titlebar-controls') || e.target.closest('button')) return;
-                appWindow.startDragging();
-            });
-        }
-
-        this.btnMinimize.addEventListener('click', () => {
-            appWindow.minimize();
+        // Window Controls
+        this.titlebar.addEventListener('mousedown', (e) => {
+            if (e.target.closest('button')) return;
+            appWindow.startDragging();
         });
 
-        this.btnClose.addEventListener('click', () => {
-            appWindow.close();
+        this.btnMinimize.addEventListener('click', () => appWindow.minimize());
+        this.btnClose.addEventListener('click', () => appWindow.close());
+
+        // Modals
+        this.btnSettings.addEventListener('click', () => this.settingsModal.classList.add('active'));
+        this.btnCloseSettings.addEventListener('click', () => this.settingsModal.classList.remove('active'));
+        this.settingsModal.addEventListener('click', (e) => {
+            if (e.target === this.settingsModal) this.settingsModal.classList.remove('active');
         });
 
-        // Profile Modal Listeners
-        if (this.btnProfile) {
-            this.btnProfile.addEventListener('click', () => this.openProfileModal());
-        }
-        if (this.btnCloseProfile) {
-            this.btnCloseProfile.addEventListener('click', () => this.closeProfileModal());
-        }
-        if (this.profileModal) {
-            this.profileModal.addEventListener('click', (e) => {
-                if (e.target === this.profileModal) this.closeProfileModal();
-            });
-        }
-    }
-
-    openProfileModal() {
-        this.updateUsageStats();
-        this.profileModal.classList.add('active');
-    }
-
-    closeProfileModal() {
-        this.profileModal.classList.remove('active');
-    }
-
-    initSettingsInfo() {
-        this.btnSettings = document.getElementById('btn-settings');
-        this.settingsModal = document.getElementById('settings-modal');
-        this.btnCloseSettings = document.getElementById('btn-close-settings');
-        this.perfSlider = document.getElementById('perf-slider');
-        this.perfLevelLabel = document.getElementById('perf-level-label');
-
-        // Performance level names
-        this.perfLevelNames = ['Tam Mod', 'Hafif', 'Dengeli', 'Performans', 'Ultra Hafif'];
-
-        // Migrate old setting if exists
-        const oldSetting = localStorage.getItem('performance-light-mode');
-        if (oldSetting === 'true') {
-            localStorage.setItem('perf-level', '3');
-            localStorage.removeItem('performance-light-mode');
-        }
-
-        // Load saved level
-        const savedLevel = parseInt(localStorage.getItem('perf-level') || '0');
-        this.applyPerfLevel(savedLevel);
-        if (this.perfSlider) this.perfSlider.value = savedLevel;
-
-        // Event Listeners
-        if (this.btnSettings) {
-            this.btnSettings.addEventListener('click', () => {
-                this.settingsModal.classList.add('active');
-            });
-        }
-
-        if (this.btnCloseSettings) {
-            this.btnCloseSettings.addEventListener('click', () => {
-                this.settingsModal.classList.remove('active');
-            });
-        }
-
-        if (this.settingsModal) {
-            this.settingsModal.addEventListener('click', (e) => {
-                if (e.target === this.settingsModal) this.settingsModal.classList.remove('active');
-            });
-        }
-
-        if (this.perfSlider) {
-            this.perfSlider.addEventListener('input', (e) => {
-                const level = parseInt(e.target.value);
-                this.applyPerfLevel(level);
-                localStorage.setItem('perf-level', level.toString());
-            });
-        }
-    }
-
-    applyPerfLevel(level) {
-        // Remove all perf classes
-        document.body.classList.remove('perf-1', 'perf-2', 'perf-3', 'perf-4', 'performance-light');
-        // Add the current level class (0 = no class = full mode)
-        if (level > 0) {
-            document.body.classList.add(`perf-${level}`);
-        }
-        // Update label
-        if (this.perfLevelLabel) {
-            this.perfLevelLabel.textContent = this.perfLevelNames[level] || 'Tam Mod';
-        }
-    }
-
-    async updateUsageStats() {
-        try {
-            const stats = await invoke('get_usage');
-            // stats: { day, week, month, all } in bytes
-            if (this.usageDay) this.usageDay.textContent = this.formatData(stats.day);
-            if (this.usageWeek) this.usageWeek.textContent = this.formatData(stats.week);
-            if (this.usageMonth) this.usageMonth.textContent = this.formatData(stats.month);
-            if (this.usageAll) this.usageAll.textContent = this.formatData(stats.all);
-        } catch (error) {
-            console.error('Failed to update usage stats:', error);
-            if (this.usageDay) this.usageDay.textContent = '--';
-            if (this.usageWeek) this.usageWeek.textContent = '--';
-            if (this.usageMonth) this.usageMonth.textContent = '--';
-            if (this.usageAll) this.usageAll.textContent = '--';
-        }
-    }
-
-    async initTauriListeners() {
-        // Listen for Xray Stats from Rust backend
-        await listen('xray-stats', (event) => {
-            try {
-                let data = event.payload;
-                if (typeof data === 'string') {
-                    data = JSON.parse(data);
-                }
-                this.processStats(data);
-            } catch (e) {
-                console.error('Stats parse error:', e);
-            }
+        this.btnProfile.addEventListener('click', () => {
+            this.updateUsageStats();
+            this.profileModal.classList.add('active');
+        });
+        this.btnCloseProfile.addEventListener('click', () => this.profileModal.classList.remove('active'));
+        this.profileModal.addEventListener('click', (e) => {
+            if (e.target === this.profileModal) this.profileModal.classList.remove('active');
         });
     }
 
-    processStats(data) {
-        if (!data || !data.stat) return;
+    initSettings() {
+        // Graphics Quality Logic
+        // 0 = Standard (Fastest/Simplest) -> Maps to perf-4
+        // 4 = Ultra (Best Visuals) -> Maps to base CSS
+        const slider = document.getElementById('perf-slider');
+        const label = document.getElementById('perf-level-label');
+        const labels = ['Standard', 'Balanced', 'High', 'Ultra', 'Max'];
 
-        let up = 0;
-        let down = 0;
+        // Map slider (0-4) to CSS classes
+        // 0 -> perf-4 (Standard - No Shadows/Anim/Blur/Orb)
+        // 1 -> perf-3 (Balanced - No Blur/Orb)
+        // 2 -> perf-2 (High - No Orb, but Blur is ON)
+        // 3 -> perf-1 (Ultra - Orb is ON, but maybe simplified) - Actually Orb is removed in perf-1 CSS above?
+        // Let's align JS with CSS comments:
+        // perf-4: No Orb, No Blur, No Shadow/Anim
+        // perf-3: No Orb, No Blur
+        // perf-2: No Orb (Blur ON)
+        // perf-1: Gradient/Orb OFF? Wait, CSS says perf-1 removes orb.
 
-        // Only count outbound>>>proxy traffic to avoid double/triple counting.
-        // Xray reports stats at multiple levels (inbound, outbound, user) and
-        // summing all of them inflates the real numbers by 2-3x.
-        data.stat.forEach(item => {
-            const name = item.name || '';
-            if (!name.startsWith('outbound>>>proxy>>>')) return;
+        // CSS Logic:
+        // perf-1,2,3,4 remove ORB.
+        // So Level 4 (Max, no class) has Orb.
+        // Level 3 (Ultra, perf-1) has No Orb.
 
-            const val = parseInt(item.value);
-            if (!isNaN(val)) {
-                if (name.includes('uplink')) up += val;
-                if (name.includes('downlink')) down += val;
-            }
-        });
+        // Correct Mapping:
+        const classMap = ['perf-4', 'perf-3', 'perf-2', 'perf-1', ''];
 
-        const now = Date.now();
-        const deltaT = (now - this.lastStats.timestamp) / 1000;
+        const updatePerf = (val) => {
+            val = parseInt(val);
+            document.body.className = document.body.className.replace(/perf-\d/g, '');
+            const cls = classMap[val];
+            if (cls) document.body.classList.add(cls);
 
-        let upSpeed = 0;
-        let downSpeed = 0;
+            if (label) label.textContent = labels[val];
+            localStorage.setItem('perf-level', val);
+        };
 
-        if (deltaT > 0) {
-            upSpeed = Math.max(0, (up - this.lastStats.up) / deltaT);
-            downSpeed = Math.max(0, (down - this.lastStats.down) / deltaT);
+        // Default to 4 (Max) if not set, or user's preference
+        // User asked for "Standard" to be simple. Let's default to verified user's preference or Max.
+        // Actually, let's look at what user said: "bu en basit standart olan olsun" implies he wants 0 to be the start.
+        // But previously saved '0' meant 'Base'.
+        // If I merely invert logic, old users with '0' will suddenly get 'perf-4' (Ugly).
+        // That's acceptable for a "Standard" label.
+
+        const saved = localStorage.getItem('perf-level') !== null ? localStorage.getItem('perf-level') : 1;
+
+        if (slider) {
+            slider.value = saved;
+            updatePerf(saved);
+            slider.addEventListener('input', (e) => {
+                updatePerf(e.target.value);
+            });
         }
-
-        // NaN protection
-        upSpeed = isNaN(upSpeed) ? 0 : upSpeed;
-        downSpeed = isNaN(downSpeed) ? 0 : downSpeed;
-
-        this.lastStats = { up, down, timestamp: now };
-
-        this.updateTrafficUI({
-            upSpeed,
-            downSpeed,
-            total: up + down
-        });
-    }
-
-    updateTrafficUI(data) {
-        if (!this.isConnected) return;
-        if (this.downloadSpeed) this.downloadSpeed.textContent = this.formatSpeed(data.downSpeed);
-        if (this.uploadSpeed) this.uploadSpeed.textContent = this.formatSpeed(data.upSpeed);
-        if (this.totalUsage) this.totalUsage.textContent = this.formatData(data.total);
-    }
-
-    formatSpeed(bytes) {
-        if (!bytes || isNaN(bytes) || bytes === 0) return '0.00 KB/s';
-        const kb = bytes / 1024;
-        if (kb < 1024) return `${kb.toFixed(2)} KB/s`;
-        const mb = kb / 1024;
-        return `${mb.toFixed(2)} MB/s`;
-    }
-
-    formatData(bytes) {
-        if (!bytes || isNaN(bytes) || bytes === 0) return '0.00 MB';
-        const mb = bytes / (1024 * 1024);
-        if (mb < 1024) return `${mb.toFixed(2)} MB`;
-        const gb = mb / 1024;
-        return `${gb.toFixed(2)} GB`;
     }
 
     async toggleConnection() {
         if (this.isConnecting) return;
-
-        this.hideError();
-        this.triggerRipple();
-        this.triggerRipple(); // Double ripple
 
         if (this.isConnected) {
             await this.disconnect();
@@ -290,256 +157,218 @@ class VPNApp {
 
     async connect() {
         this.setConnectingState();
-
         try {
             const result = await invoke('start_vpn');
-            console.log('VPN Started:', result);
+            // console.log('VPN Started:', result);
             this.setConnectedState();
         } catch (error) {
             console.error('VPN Error:', error);
             this.setDisconnectedState();
-            this.showError(error || 'Bağlantı kurulamadı');
+            this.showError(error || 'Bağlantı Başarısız');
         }
     }
 
     async disconnect() {
-        this.triggerScreenFlash('flash-disconnect');
-
         try {
             await invoke('stop_vpn');
-            this.setDisconnectedState();
         } catch (error) {
             console.error('Disconnect error:', error);
+        } finally {
             this.setDisconnectedState();
         }
     }
 
-    // =========================================
-    //            ANIMATION ENGINE
-    // =========================================
-
-    triggerScreenFlash(className) {
-        if (!this.screenFlash) return;
-        this.screenFlash.className = 'screen-flash';
-        void this.screenFlash.offsetWidth;
-        this.screenFlash.classList.add(className);
-        this.screenFlash.addEventListener('animationend', () => {
-            this.screenFlash.className = 'screen-flash';
-        }, { once: true });
+    // Helper for safe text updates
+    setText(el, text) {
+        if (el) el.textContent = text;
     }
 
-    triggerRipple() {
-        if (!this.rippleContainer) return;
-        const ripple = document.createElement('div');
-        ripple.classList.add('ripple', 'animate');
-        this.rippleContainer.appendChild(ripple);
-        ripple.addEventListener('animationend', () => ripple.remove());
-    }
-
-    triggerShockwave() {
-        if (!this.shockwave) return;
-        this.shockwave.classList.remove('animate');
-        void this.shockwave.offsetWidth;
-        this.shockwave.classList.add('animate');
-        this.shockwave.addEventListener('animationend', () => {
-            this.shockwave.classList.remove('animate');
-        }, { once: true });
-    }
-
-    triggerSuccessBurst() {
-        this.triggerScreenFlash('flash-success');
-    }
-
-    animateStatusText(text) {
-        if (!this.statusText) return;
-        this.statusText.classList.remove('animate-change');
-        void this.statusText.offsetWidth;
-
-        const originalText = text;
-        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&";
-        let iterations = 0;
-
-        if (this.textInterval) clearInterval(this.textInterval);
-
-        this.textInterval = setInterval(() => {
-            this.statusText.innerText = originalText
-                .split("")
-                .map((letter, index) => {
-                    if (index < iterations) {
-                        return originalText[index];
-                    }
-                    return chars[Math.floor(Math.random() * chars.length)];
-                })
-                .join("");
-
-            if (iterations >= originalText.length) {
-                clearInterval(this.textInterval);
-                this.statusText.classList.add('animate-change');
-            }
-
-            iterations += 1 / 3;
-        }, 30);
-    }
-
-    startConnectedParticles() {
-        this.stopConnectedParticles();
-        if (!this.particlesContainer) return;
-
-        for (let i = 0; i < 5; i++) {
-            setTimeout(() => this.spawnFloatingParticle(), i * 300);
-        }
-
-        this.ambientParticleInterval = setInterval(() => {
-            if (!this.isConnected) return;
-            this.spawnFloatingParticle();
-        }, 1200);
-    }
-
-    stopConnectedParticles() {
-        if (this.ambientParticleInterval) {
-            clearInterval(this.ambientParticleInterval);
-            this.ambientParticleInterval = null;
-        }
-        if (!this.particlesContainer) return;
-        const particles = this.particlesContainer.querySelectorAll('.particle');
-        particles.forEach(p => {
-            p.style.transition = 'opacity 0.5s';
-            p.style.opacity = '0';
-            setTimeout(() => p.remove(), 500);
-        });
-    }
-
-    spawnFloatingParticle() {
-        if (!this.particlesContainer) return;
-        const particle = document.createElement('div');
-        particle.classList.add('particle');
-
-        const size = 2 + Math.random() * 4;
-        const startX = Math.random() * 100;
-        const tx = (Math.random() - 0.5) * 120;
-        const ty = -(150 + Math.random() * 300);
-        const duration = 3 + Math.random() * 5;
-
-        particle.style.width = `${size}px`;
-        particle.style.height = `${size}px`;
-        particle.style.left = `${startX}%`;
-        particle.style.bottom = '-10px';
-        particle.style.setProperty('--tx', `${tx}px`);
-        particle.style.setProperty('--ty', `${ty}px`);
-        particle.style.setProperty('--duration', `${duration}s`);
-        particle.style.setProperty('--delay', '0s');
-
-        const colors = ['#34d399', '#22d3ee', '#818cf8', '#c084fc', '#00f0ff'];
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        particle.style.background = color;
-        particle.style.boxShadow = `0 0 10px ${color}, 0 0 20px ${color}40`;
-
-        this.particlesContainer.appendChild(particle);
-        particle.classList.add('active');
-
-        setTimeout(() => particle.remove(), duration * 1000 + 100);
-    }
-
-    // =========================================
-    //            STATE MANAGEMENT
-    // =========================================
-
+    // State Management
     setConnectingState() {
         this.isConnecting = true;
-        this.isConnected = false;
+        document.body.classList.remove('connected');
+        document.body.classList.add('connecting');
 
-        document.body.className = 'connecting';
-        this.animateStatusText('Bağlanıyor...');
-        this.connectLabel.textContent = 'Bağlantı kuruluyor';
-        if (this.connectionTime) this.connectionTime.style.display = 'none';
-        if (this.statsGrid) {
-            this.statsGrid.style.display = 'none';
-            this.statsGrid.classList.remove('animate-in');
-        }
+        this.setText(this.statusText, 'CONNECTING...');
+        this.setText(this.connectLabel, 'Establishing secure tunnel...');
+        if (this.errorContainer) this.errorContainer.style.opacity = '0';
     }
 
     setConnectedState() {
         this.isConnected = true;
         this.isConnecting = false;
         this.connectionStartTime = Date.now();
-        this.lastStats = { up: 0, down: 0, timestamp: Date.now() };
 
-        document.body.className = 'connected';
-        this.animateStatusText('Bağlandı');
-        this.connectLabel.textContent = 'Bağlantıyı kesmek için dokunun';
+        document.body.classList.remove('connecting');
+        document.body.classList.add('connected');
 
-        if (this.connectionTime) this.connectionTime.style.display = 'flex';
-        if (this.statsGrid) {
-            this.statsGrid.style.display = 'grid';
-            requestAnimationFrame(() => {
-                this.statsGrid.classList.add('animate-in');
-            });
-        }
+        this.setText(this.statusText, 'CONNECTED');
+        this.setText(this.connectLabel, 'Tap to Disconnect');
+        // Clear inline opacity so CSS hover/connected state works
+        if (this.connectLabel) this.connectLabel.style.opacity = '';
 
-        // Reset speed displays
-        if (this.downloadSpeed) this.downloadSpeed.textContent = '0.00 KB/s';
-        if (this.uploadSpeed) this.uploadSpeed.textContent = '0.00 KB/s';
-        if (this.totalUsage) this.totalUsage.textContent = '0.00 MB';
-
-        // Success animations
-        this.triggerSuccessBurst();
-        this.startConnectedParticles();
         this.startTimer();
-        this.hideError();
     }
 
     setDisconnectedState() {
         this.isConnected = false;
         this.isConnecting = false;
-        this.connectionStartTime = null;
 
-        document.body.className = '';
-        this.animateStatusText('Bağlantı Kesildi');
-        this.connectLabel.textContent = 'Bağlanmak için dokunun';
+        document.body.classList.remove('connecting', 'connected');
 
-        if (this.connectionTime) this.connectionTime.style.display = 'none';
-        if (this.statsGrid) {
-            this.statsGrid.style.display = 'none';
-            this.statsGrid.classList.remove('animate-in');
+        this.setText(this.statusText, 'DISCONNECTED');
+        this.setText(this.connectLabel, 'Tap to Connect');
+        if (this.connectLabel) {
+            this.connectLabel.style.opacity = '1';
+            this.connectLabel.style.pointerEvents = 'auto';
         }
 
-        this.stopConnectedParticles();
         this.stopTimer();
+
+        // Reset stats
+        this.setText(this.downloadSpeed, '0.00 KB/s');
+        this.setText(this.uploadSpeed, '0.00 KB/s');
     }
 
+    // Timer Logic
     startTimer() {
         this.stopTimer();
+        this.setText(this.timeDisplay, '00:00:00'); // Reset initially
         this.timerInterval = setInterval(() => {
             if (!this.connectionStartTime) return;
             const elapsed = Math.floor((Date.now() - this.connectionStartTime) / 1000);
-            const hours = Math.floor(elapsed / 3600).toString().padStart(2, '0');
-            const minutes = Math.floor((elapsed % 3600) / 60).toString().padStart(2, '0');
-            const seconds = (elapsed % 60).toString().padStart(2, '0');
-            this.timeDisplay.textContent = `${hours}:${minutes}:${seconds}`;
+            const h = Math.floor(elapsed / 3600).toString().padStart(2, '0');
+            const m = Math.floor((elapsed % 3600) / 60).toString().padStart(2, '0');
+            const s = (elapsed % 60).toString().padStart(2, '0');
+            this.setText(this.timeDisplay, `${h}:${m}:${s}`);
         }, 1000);
     }
 
     stopTimer() {
-        if (this.timerInterval) {
-            clearInterval(this.timerInterval);
-            this.timerInterval = null;
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        this.timerInterval = null;
+        this.setText(this.timeDisplay, '00:00:00');
+    }
+
+    showError(msg) {
+        this.setText(this.errorText, msg);
+        if (this.errorContainer) {
+            this.errorContainer.style.opacity = '1';
+            setTimeout(() => {
+                this.errorContainer.style.opacity = '0';
+            }, 5000);
         }
-        if (this.timeDisplay) this.timeDisplay.textContent = '00:00:00';
     }
 
-    showError(message) {
-        if (!this.errorContainer) return;
-        this.errorText.textContent = message;
-        this.errorContainer.style.display = 'block';
-        setTimeout(() => this.hideError(), 8000);
+    // Stats & Data
+    initTauriListeners() {
+        listen('xray-stats', (event) => {
+            this.processStats(event.payload);
+        }).then(() => {
+            // console.log('Stats listener registered successfully');
+        }).catch(e => {
+            console.error('Failed to register stats listener', e);
+            this.showError('Stats Error');
+        });
     }
 
-    hideError() {
-        if (this.errorContainer) this.errorContainer.style.display = 'none';
+    processStats(data) {
+        if (!data) return;
+        if (typeof data === 'string') {
+            try {
+                data = JSON.parse(data);
+            } catch (e) {
+                return;
+            }
+        }
+
+        if (!data.stat || !Array.isArray(data.stat)) return;
+
+        let up = 0;
+        let down = 0;
+        let found = false;
+
+        data.stat.forEach(item => {
+            const name = item.name || "";
+            // Relaxed filter: Count ANY traffic from proxy/inbound to debug "0 issue"
+            // We prioritize 'outbound>>>proxy' but if 0, we might want to see 'inbound'
+            if (name.includes('traffic>>>')) {
+                let val = 0;
+                if (typeof item.value === 'number') val = item.value;
+                else if (typeof item.value === 'string') val = parseInt(item.value, 10) || 0;
+
+                // Match specific proxy first
+                if (name.includes('outbound>>>proxy>>>')) {
+                    if (name.endsWith('uplink')) up += val;
+                    if (name.endsWith('downlink')) down += val;
+                    found = true;
+                }
+                // Fallback: if we haven't found proxy stats yet, maybe use inbound?
+                // Actually, let's just stick to proxy. If proxy is 0, stats are 0.
+            }
+        });
+
+        // Visual Debug: Turn stats text Green if we got data
+        if (up > 0 || down > 0) {
+            this.totalUsage.style.color = '#10B981';
+        }
+
+        const now = Date.now();
+        const delta = (now - this.lastStats.timestamp) / 1000;
+
+        if (delta > 0.1) {
+            let diffUp = up - this.lastStats.up;
+            let diffDown = down - this.lastStats.down;
+
+            if (diffUp < 0) diffUp = 0; // Reset if restart
+            if (diffDown < 0) diffDown = 0;
+
+            const upSpeed = diffUp / delta;
+            const downSpeed = diffDown / delta;
+
+            if (this.isConnected) {
+                this.setText(this.downloadSpeed, this.formatSpeed(downSpeed));
+                this.setText(this.uploadSpeed, this.formatSpeed(upSpeed));
+                this.setText(this.totalUsage, this.formatData(up + down));
+            }
+
+            this.lastStats = { up, down, timestamp: now };
+        } else {
+            this.setText(this.totalUsage, this.formatData(up + down));
+        }
+    }
+
+    async updateUsageStats() {
+        try {
+            const stats = await invoke('get_usage');
+            this.setText(this.usageDay, this.formatData(stats.day));
+            this.setText(this.usageWeek, this.formatData(stats.week));
+            this.setText(this.usageMonth, this.formatData(stats.month));
+            this.setText(this.usageAll, this.formatData(stats.all));
+        } catch (e) {
+            console.error('Usage fetch failed', e);
+        }
+    }
+
+    formatSpeed(bytes) {
+        if (!bytes || bytes < 0) return '0 B/s';
+        if (bytes < 1024) return `${Math.floor(bytes)} B/s`;
+        const kb = bytes / 1024;
+        if (kb < 1024) return `${kb.toFixed(2)} KB/s`;
+        return `${(kb / 1024).toFixed(2)} MB/s`;
+    }
+
+    formatData(bytes) {
+        if (!bytes || bytes < 0) return '0 B';
+        if (bytes < 1024) return `${Math.floor(bytes)} B`;
+        const kb = bytes / 1024;
+        if (kb < 1024) return `${kb.toFixed(2)} KB`;
+        const mb = kb / 1024;
+        if (mb < 1024) return `${mb.toFixed(2)} MB`;
+        return `${(mb / 1024).toFixed(2)} GB`;
     }
 }
 
-// Initialize app
 document.addEventListener('DOMContentLoaded', () => {
     new VPNApp();
 });

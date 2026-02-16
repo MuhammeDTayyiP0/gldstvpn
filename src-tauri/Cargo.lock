@@ -4008,7 +4008,7 @@ dependencies = [
 
 [[package]]
 name = "v204-vpn"
-version = "3.0.0"
+version = "3.2.0"
 dependencies = [
  "chrono",
  "os_pipe",
