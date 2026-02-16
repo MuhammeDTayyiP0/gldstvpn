@@ -79,8 +79,49 @@
         <!-- Subtle spinner ring (visible when connecting) -->
         <div class="spinner-ring"></div>
 
-        <!-- Decoration -->
-        <div class="ribbon-emoji">🎀</div>
+        <!-- Decoration: User Provided SVG Ribbon -->
+        <svg class="ribbon-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="applePink" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#FF92C2;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#F53B8E;stop-opacity:1" />
+            </linearGradient>
+
+            <linearGradient id="darkPink" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#D83178;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#A31D54;stop-opacity:1" />
+            </linearGradient>
+
+            <radialGradient id="highlight" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.4" />
+              <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:0" />
+            </radialGradient>
+          </defs>
+
+          <path d="M28 36 C 24 44, 16 54, 10 58 C 12 60, 18 61, 22 58 C 26 55, 30 46, 31 38" fill="url(#applePink)"
+            stroke="#B0265D" stroke-width="0.5" />
+
+          <path d="M36 36 C 40 44, 48 54, 54 58 C 52 60, 46 61, 42 58 C 38 55, 34 46, 33 38" fill="url(#applePink)"
+            stroke="#B0265D" stroke-width="0.5" />
+
+          <path d="M32 32 C 15 12, 2 22, 6 36 C 10 42, 25 40, 32 32" fill="url(#darkPink)" />
+
+          <path d="M31 31 C 18 14, 4 22, 8 35 C 12 40, 26 38, 31 31" fill="url(#applePink)" stroke="#B0265D"
+            stroke-width="0.8" />
+
+          <path d="M32 32 C 49 12, 62 22, 58 36 C 54 42, 39 40, 32 32" fill="url(#darkPink)" />
+
+          <path d="M33 31 C 46 14, 60 22, 56 35 C 52 40, 38 38, 33 31" fill="url(#applePink)" stroke="#B0265D"
+            stroke-width="0.8" />
+
+          <ellipse cx="18" cy="24" rx="4" ry="2" fill="url(#highlight)" transform="rotate(-30 18 24)" />
+          <ellipse cx="46" cy="24" rx="4" ry="2" fill="url(#highlight)" transform="rotate(30 46 24)" />
+
+          <rect x="26" y="27" width="12" height="11" rx="5" ry="5" fill="url(#applePink)" stroke="#B0265D"
+            stroke-width="1" />
+          <path d="M28 30 Q 32 28 36 30" fill="none" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="1.5"
+            stroke-linecap="round" />
+        </svg>
       </div>
 
       <div class="action-label" id="connect-label">Tap to Connect</div>

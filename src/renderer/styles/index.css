@@ -6,29 +6,31 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 
 :root {
-  /* Core Palette - Deep Space Charcoal */
-  --bg-root: #0B0D12;
-  --bg-card: #15171C;
-  --bg-card-hover: #1E2026;
-  --bg-input: #1C1E24;
+  /* Core Palette - User Choice (Bright Pink) */
+  --bg-root: #FF6FFF;
+  --bg-card: rgba(255, 255, 255, 0.9);
+  /* Semi-transparent white */
+  --bg-card-hover: #FFFFFF;
+  --bg-input: rgba(255, 255, 255, 0.6);
 
   /* Accents */
-  --accent-primary: #EC4899;
-  /* Vibrat Pink */
-  --accent-glow: rgba(236, 72, 153, 0.4);
-  --status-connected: #DB2777;
+  --accent-primary: #FF1493;
   /* Deep Pink */
+  --accent-glow: rgba(255, 255, 255, 0.6);
+  --status-connected: #BE185D;
+  /* Pink-700 */
   --status-disconnected: #EF4444;
   /* Coral Red */
   --status-connecting: #F59E0B;
   /* Amber */
 
   /* Text */
-  --text-primary: #FAFAFA;
-  --text-secondary: #FBCFE8;
-  /* Pink Tinted White */
-  --text-muted: #831843;
-  /* Deep Pink Muted */
+  --text-primary: #500724;
+  /* Very Dark Pink */
+  --text-secondary: #831843;
+  /* Dark Pink */
+  --text-muted: #9D174D;
+  /* Pink Muted */
 
   /* Metrics */
   --radius-sm: 8px;
@@ -41,15 +43,37 @@
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.ribbon-emoji {
+.ribbon-icon {
   position: absolute;
-  top: -15px;
-  right: -15px;
-  font-size: 24px;
-  transform: rotate(15deg);
+  top: 4px;
+  right: 4px;
+  width: 50px;
+  height: 50px;
+  /* Removed color: #FF69B4; using SVG internal colors */
+  transform: rotate(35deg);
   z-index: 20;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
   pointer-events: none;
+}
+
+.connect-btn {
+  /* Ensure button is visible on FF6FFF */
+  background: var(--bg-card);
+}
+
+.connect-btn:hover {
+  background: #FFFFFF;
+}
+
+body.connected .connect-btn {
+  background: #FFFFFF;
+  /* White button when connected to stand out on pink */
+  color: var(--bg-root);
+  /* Icon becomes pink */
+}
+
+body.connected .power-icon {
+  color: var(--bg-root);
 }
 
 *,
@@ -646,4 +670,11 @@ body.perf-4 .connect-btn {
 
 body.perf-4.connected .connect-btn {
   background: var(--status-connected);
+  color: #fff;
+  /* Ensure text is white on dark pink button */
+}
+
+body.perf-4 .connect-btn {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  /* Darker border for light theme */
 }
