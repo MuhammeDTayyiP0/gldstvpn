@@ -1,4 +1,4 @@
-// V204 VPN - Ultra Premium UI Logic (v3.2.0)
+// V204 VPN - Ultra Premium UI Logic (v3.3.1)
 const invoke = window.__TAURI__.core.invoke;
 const appWindow = window.__TAURI__.window.getCurrentWindow();
 const { listen } = window.__TAURI__.event;
